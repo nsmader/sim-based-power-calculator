@@ -6,7 +6,9 @@ shinyUI(fluidPage(
   fluidRow(
     column(3,
       wellPanel(
-        p(actionButton("runSim", "Run simulation", icon("bolt"))), # look here for all icons - http://fontawesome.io/icons/
+        p(actionButton("runSim", "Run simulation", icon("bolt"))) # look here for all icons - http://fontawesome.io/icons/
+      ),
+      wellPanel(
         h4("Sample Sizes"),
         numericInput("cluster.size", "Number of clusters per arm", 40, min = 1, max = 1000),
         numericInput("cluster.num",  "Sampled units per cluster", 128, min = 1)
