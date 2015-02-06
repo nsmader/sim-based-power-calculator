@@ -4,6 +4,8 @@
 ### Input parameters ###
 ########################
 library (lme4) 
+try(setwd ("H:/Projects/Matt Freeman/TwoLevel"), silent = T)
+try(setwd ("C:/Users/nmader/Documents/GitHub/sim-based-power-calculator"), silent = T)
 
 cluster.num = 128 #Each arm
 cluster.size = 40
@@ -34,7 +36,6 @@ if ( is.null(cluster.var) ) {cluster.var = ( cluster.ICC*pi^2/3)/(1-cluster.ICC)
 
 Results = NULL
 
-setwd ("H:/Projects/Matt Freeman/TwoLevel")
 ### Begin simulation  
 for (or.i in or.list){
 	
