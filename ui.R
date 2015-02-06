@@ -10,8 +10,8 @@ shinyUI(fluidPage(
       ),
       wellPanel(
         h4("Sample Sizes"),
-        numericInput("cluster.size", "Number of clusters per arm", 40, min = 1, max = 1000),
-        numericInput("cluster.num",  "Sampled units per cluster", 128, min = 1)
+        numericInput("cluster.size", "Number of clusters per arm", 2, min = 1, max = 1000), # 40
+        numericInput("cluster.num",  "Sampled units per cluster", 100, min = 1) # 128
       ),
       wellPanel(
         h4("Variance/Covariance"),
@@ -23,12 +23,12 @@ shinyUI(fluidPage(
         numericInput("baseline.prev", "Baseline probability", 0.78, min = 0, max = 1),
         numericInput("trt.prev.max", "Max probability resulting from treatment", 0.78, min = 0, max = 1),
         numericInput("trt.prev.min", "Min probability resulting from treatment", 0.60, min = 0, max = 1),
-        numericInput("trt.intv.num", "Number of intervals to test", 50, min = 0, max = 100)
+        numericInput("trt.intv.num", "Number of intervals to test", 5, min = 0, max = 100) # 50
       ),
       wellPanel(
         h4("Power and Simulation Parameters"),
         numericInput("alpha", "Alpha", 0.05, min = 0, max = 1),
-        numericInput("n.iter", "# of Iterations", 500, min = 0)
+        numericInput("n.iter", "# of Iterations", 20, min = 0) # 500
       )
     ),
     column(9,

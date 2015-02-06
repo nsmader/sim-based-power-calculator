@@ -16,6 +16,7 @@ shinyServer(function(input, output){
                  #        to run. I'm not quite sure how to do this but, somehow, this example does it: https://github.com/rstudio/shiny-examples/blob/master/060-retirement-simulation/server.r
     
     # Isolate all of the following assignments to not allow them to run until the "Run Sim" button is clicked
+    # Great description of isolation: http://shiny.rstudio.com/articles/isolation.html
     cluster.num = isolate(as.integer(input$cluster.num))
     cluster.size = isolate(as.integer(input$cluster.size))
     
