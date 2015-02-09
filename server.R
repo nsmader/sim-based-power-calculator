@@ -3,10 +3,10 @@
 ########################
 ### Input parameters ###
 ########################
-library (lme4) 
+library(lme4) 
 library(shiny)
-try(setwd ("H:/Projects/Matt Freeman/TwoLevel"), silent = T)
-try(setwd ("C:/Users/nmader/Documents/GitHub/sim-based-power-calculator"), silent = T)
+# try(setwd ("H:/Projects/Matt Freeman/TwoLevel"), silent = T)
+# try(setwd ("C:/Users/nmader/Documents/GitHub/sim-based-power-calculator"), silent = T)
 
 shinyServer(function(input, output){
   

@@ -20,15 +20,15 @@ shinyUI(fluidPage(
       ),
       wellPanel(
         h4("Treatment Parameters"),
-        numericInput("baseline.prev", "Baseline probability", 0.78, min = 0, max = 1),
-        numericInput("trt.prev.max", "Max probability resulting from treatment", 0.78, min = 0, max = 1),
-        numericInput("trt.prev.min", "Min probability resulting from treatment", 0.60, min = 0, max = 1),
+        numericInput("baseline.prev", "Baseline prevalence", 0.78, min = 0, max = 1),
+        numericInput("trt.prev.max", "Max prevalence under treatment", 0.78, min = 0, max = 1),
+        numericInput("trt.prev.min", "Min prevalence under treatment", 0.60, min = 0, max = 1),
         numericInput("trt.intv.num", "Number of intervals to test", 5, min = 0, max = 100) # 50
       ),
       wellPanel(
         h4("Power and Simulation Parameters"),
         numericInput("alpha", "Alpha", 0.05, min = 0, max = 1),
-        numericInput("n.iter", "# of Iterations", 20, min = 0) # 500
+        numericInput("n.iter", "Number of Simulation Iterations", 10, min = 0) # 500
       )
     ),
     column(9,
