@@ -32,7 +32,9 @@ shinyUI(fluidPage(
       )
     ),
     column(9,
-      plotOutput("plot1")
+      plotOutput("plot1"),
+      tableOutput("table"),
+      downloadButton('downloadData', 'Download table of results')
     )
   )
 ))

@@ -9,8 +9,8 @@ library(shiny)
 # try(setwd ("C:/Users/nmader/Documents/GitHub/sim-based-power-calculator"), silent = T)
 
 shinyServer(function(input, output){
-  
-  output$plot1 <- renderPlot({
+
+  Results <- reactive({
     input$runSim # NSM: This creates dependency (i.e. will rerun this code) every time the "run sim" button is clicked.
                  #      The trick is to isolate this run from all other changes of parameters, until the user is ready 
                  #        to run. I'm not quite sure how to do this but, somehow, this example does it: https://github.com/rstudio/shiny-examples/blob/master/060-retirement-simulation/server.r
@@ -70,8 +70,23 @@ shinyServer(function(input, output){
     	#write.csv (Results, file = "Hookworm.csv") 
     
     } #End of ORs
-    
-    plot (Results, type = "l", xlab = "Treatment Prevalence", ylab = "Power")
+    colnames(Results) <- c("Treatment Prevalence", "Power")
+    rownames(Results) <- NULL
+    Results
   })
+    
+  output$plot1 <- renderPlot({  
+    plot (Results(), type = "l", xlab = "Treatment Prevalence", ylab = "Power")
+  })
+  
+  # Table output
+  output$table <- renderTable(Results())
+  
+  output$downloadData <- downloadHandler(
+    filename = "sim-results-out.csv",
+    content = function(file) {
+      write.csv(Results(), file, row.names = FALSE)
+    }
+  )
 
 })
