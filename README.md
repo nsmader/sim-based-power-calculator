@@ -1,4 +1,5 @@
-### Open Access RCT Design Tool Using Simulation-Based Estimation
+### Open Access Impact Evaluation Design Tool
+#### Using Simulation-Based Estimation
 This sample-size and power calculator provides researchers and practitioners with a simple, web-based interface for a range of experimental study designs. The use of drop-down menus and online tutorial make this tool easy to use for those with a range of technical backgrounds. This tool allows for a range of study design complexity--from simple randomized controlled trials (RCTs) to cluster-randomized trials with binary outcomes and longitudinal follow-up--by being grounded in use of simulation methods. The open-source nature of this project allows for contributions from researchers across the natural and social sciences--economics, public health, education, etc--to meet their field's particular needs.
 
 #### Advantages of this tool
