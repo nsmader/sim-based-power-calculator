@@ -4,6 +4,20 @@ library(shiny)
 shinyUI(fluidPage(
   titlePanel("Simulation-Based Statistical Power Calculator"),
   fluidRow(
+    column(6,
+      wellPanel(
+        radioButtons(inputId = "design", label = "Study Design",
+                     choices = c("RCT/Difference Between Groups", "Single Population Estimate", "LQAS"), selected = NULL, inline = FALSE)
+      )
+    ),
+    column(6,
+      wellPanel(
+        radioButtons(inputId = "outcome", label = "Outcome Type",
+                     choices = c("Binary", "Continuous", "Count"), selected = NULL, inline = FALSE)
+      )
+    )
+  ),
+  fluidRow(
     column(3,
       wellPanel(
         p(actionButton("runSim", "Run simulation", icon("bolt"))) # look here for all icons - http://fontawesome.io/icons/
@@ -31,8 +45,10 @@ shinyUI(fluidPage(
         numericInput("n.iter", "Number of Simulation Iterations", 10, min = 0) # 500
       )
     ),
-    column(9,
-      plotOutput("plot1"),
+    column(6,
+      plotOutput("plot1")
+    ),
+    column(2,
       tableOutput("table"),
       downloadButton('downloadData', 'Download table of results')
     )

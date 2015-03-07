@@ -77,6 +77,7 @@ shinyServer(function(input, output){
     
   output$plot1 <- renderPlot({  
     plot (Results(), type = "l", xlab = "Treatment Prevalence", ylab = "Power")
+    # XXX Put a line on the graph at 0.8
   })
   
   # Table output
