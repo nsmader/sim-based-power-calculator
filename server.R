@@ -21,33 +21,44 @@ shinyServer(function(input, output){
     cluster.size = isolate(as.integer(input$cluster.size))
     
     #either ICC or variance
-    cluster.var = isolate({
-      v <- as.numeric(input$cluster.var)
-      if (v == 0) v <- NA
-      v
-    })
+#     cluster.var = isolate({
+#       v <- as.numeric(input$cluster.var)
+#       if (v == 0) v <- NA
+#       v
+#     }) # Opted to not allow this option, since its interpretation was too confusing to early users
     cluster.ICC = isolate(as.numeric(input$cluster.ICC))
+    cluster.var = ( cluster.ICC*pi^2/3)/(1-cluster.ICC)
     
-    baseline.prev = isolate(as.numeric(input$baseline.prev))
-    trt.prev.max = isolate(as.numeric(input$trt.prev.max))
-    trt.prev.min = isolate(as.numeric(input$trt.prev.min))
-    trt.intv.num = isolate(as.numeric(input$trt.intv.num))
-      # NSM: Howard, I changed this to the number of intervals to test--seemed to me to be easier to specify
+    # Make modifications if not using a clustered design
+    if(input$clusterDesign == F) {
+      cluster.num <- 1
+      cluster.ICC <- 0
+    }
     
     n.iter = isolate(as.integer(input$n.iter))
-    alpha = isolate(as.numeric(input$alpha))
+    alpha  = isolate(as.numeric(input$alpha))
     
     #########################
     ### Set up simulation ###
     #########################
     
-    treat.prev = rev(seq (trt.prev.min, trt.prev.max, length.out = trt.intv.num))
-    or.list = treat.prev/(1-treat.prev) / ( baseline.prev/(1-baseline.prev))
+    if (input$trtSpec == 'Prevalence at baseline and treatment'){
+      baseline.prev = isolate(as.numeric(input$baseline.prev))
+      trt.prev.min = isolate(as.numeric(input$trt.prev)[1])
+      trt.prev.max = isolate(as.numeric(input$trt.prev)[2])
+      trt.vals.num = isolate(as.numeric(input$trt.vals.num))
+      
+      treat.prev = rev(seq (trt.prev.min, trt.prev.max, length.out = trt.vals.num))
+      or.list = treat.prev/(1-treat.prev) / ( baseline.prev/(1-baseline.prev))  
+    } else if (input$trtSpec == 'Odds ratio under treatment') {
+      or.vals     = isolate(as.numeric(input$or.list))
+      or.vals.num = isolate(as.numeric(input$or.vals.num))
+      
+      or.list = seq(or.vals[2], or.vals[1], length.out = or.vals.num)
+    }    
     
     cluster.id = rep(1:(cluster.num*2), each = cluster.size)
     treat.id = rep ( c(0,1), each = cluster.num*cluster.size)
-    
-    if ( is.na(cluster.var) ) {cluster.var = ( cluster.ICC*pi^2/3)/(1-cluster.ICC)}
     
     Results = NULL
     
@@ -66,8 +77,10 @@ shinyServer(function(input, output){
     		ests = ests[ grep("treat.id", row.names(ests)),]
     		if (ests[4] < alpha) { counter = counter + 1 }
     	} #End of iteration	
-    	Results = rbind (Results, c(treat.prev[ which(or.i == or.list)], round(counter/n.iter, 3) ))
-    	#write.csv (Results, file = "Hookworm.csv") 
+      
+      xLabel <- ifelse(input$trtSpec == 'Odds ratio under treatment', or.i, treat.prev[which(or.i == or.list)])
+    	Results = rbind (Results, c(xLabel, round(counter/n.iter, 3) ))
+    	#write.csv (Results, file = "PowerOut.csv") 
     
     } #End of ORs
     colnames(Results) <- c("Treatment Prevalence", "Power")
