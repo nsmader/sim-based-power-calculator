@@ -50,12 +50,16 @@ shinyServer(function(input, output){
       
       treat.prev = rev(seq (trt.prev.min, trt.prev.max, length.out = trt.vals.num))
       or.list = treat.prev/(1-treat.prev) / ( baseline.prev/(1-baseline.prev))  
+      
+      outLabel = "Treatment Prevalence"
     } else if (input$trtSpec == 'Odds ratio under treatment') {
       or.vals     = isolate(as.numeric(input$or.list))
       or.vals.num = isolate(as.numeric(input$or.vals.num))
       
       or.list = seq(or.vals[2], or.vals[1], length.out = or.vals.num)
-    }    
+      
+      outLabel = "Odds Ratio"
+    }
     
     cluster.id = rep(1:(cluster.num*2), each = cluster.size)
     treat.id = rep ( c(0,1), each = cluster.num*cluster.size)
@@ -83,13 +87,13 @@ shinyServer(function(input, output){
     	#write.csv (Results, file = "PowerOut.csv") 
     
     } #End of ORs
-    colnames(Results) <- c("Treatment Prevalence", "Power")
+    colnames(Results) <- c(outLabel, "Power")
     rownames(Results) <- NULL
     Results
   })
-    
+  
   output$plot1 <- renderPlot({  
-    plot (Results(), type = "l", xlab = "Treatment Prevalence", ylab = "Power")
+    plot (Results(), type = "l", xlab = colnames(Results())[1], ylab = "Power")
     # XXX Put a line on the graph at 0.8
   })
   

@@ -66,7 +66,7 @@ shinyUI(fluidPage(
         ),
         conditionalPanel(
           condition = "input.trtSpec == 'Odds ratio under treatment'",
-          sliderInput("or",      "Odds ratio", min = 0, max = 1, step = 0.01, value = c(0.75, 1.00)),
+          sliderInput("or.list",      "Odds ratio", min = 0, max = 1, step = 0.01, value = c(0.75, 1.00)),
           numericInput("or.vals.num",  "Number of values to test in this range", 5, min = 0, max = 100), # 50
           p("The odds ratio represents the treatment effect--relative to baseline--that you want to detect.") #, where values below zero represent a protective effect, and those above zero represent detrimental effects.
         )
