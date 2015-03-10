@@ -35,7 +35,7 @@ shinyUI(fluidPage(
           numericInput("cluster.num",  "Number of units per cluster (n)", 30, min = 1) # 128
         ),
         wellPanel(
-          h4("Inter-cluster Correlation"),
+          h4("Inter-Cluster Correlation"),
           #numericInput("cluster.var", "Variance", 0, min = 0), # Decided not to present this option, since interpretation was unclear to early users
           tags$div(title = withMathJax("The equation for ICC is: $$\\frac{\\sigma^2_{Between}}{\\sigma^2_{Total}}$$"), # 
             numericInput("cluster.ICC", "Amount of Intra-Cluster Correlation (ICC)", 0.028, min = 0),
