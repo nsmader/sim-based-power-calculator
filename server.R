@@ -1,12 +1,12 @@
-### Two-level Logistic Random Effect Model ###
+### Server-side code for dispatching runs of simulation-based power calculations ###
 
-########################
-### Input parameters ###
-########################
 library(lme4) 
 library(shiny)
-# try(setwd ("H:/Projects/Matt Freeman/TwoLevel"), silent = T)
-# try(setwd ("C:/Users/nmader/Documents/GitHub/sim-based-power-calculator"), silent = T)
+
+# See following links for ideas on debugging Shiny apps code
+# http://stackoverflow.com/questions/23002712/shiny-what-is-the-option-setting-to-display-in-the-console-the-messages-between
+# ... which recommends the command: options(shiny.trace=TRUE)
+# http://rstudio.github.io/shiny/tutorial/#run-and-debug
 
 shinyServer(function(input, output){
 
