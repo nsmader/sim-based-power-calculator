@@ -21,12 +21,6 @@ shinyServer(function(input, output){
     cluster.num = isolate(as.integer(input$cluster.num))
     cluster.size = isolate(as.integer(input$cluster.size))
     
-    #either ICC or variance
-#     cluster.var = isolate({
-#       v <- as.numeric(input$cluster.var)
-#       if (v == 0) v <- NA
-#       v
-#     }) # Opted to not allow this option, since its interpretation was too confusing to early users
     cluster.ICC = isolate(as.numeric(input$cluster.ICC))
     cluster.var = ( cluster.ICC*pi^2/3)/(1-cluster.ICC)
     
@@ -43,8 +37,9 @@ shinyServer(function(input, output){
     ### Set up simulation ###
     #########################
     
-    if (input$trtSpec == 'Prevalence at baseline and treatment'){
-      baseline.prev = isolate(as.numeric(input$baseline.prev.trt))
+    baseline.prev = isolate(as.numeric(input$baseline.prev))
+    if (input$trtSpec == 'Prevalence'){
+      
       trt.prev.min = isolate(as.numeric(input$trt.prev)[1])
       trt.prev.max = isolate(as.numeric(input$trt.prev)[2])
       trt.vals.num = isolate(as.numeric(input$trt.vals.num))
@@ -53,8 +48,7 @@ shinyServer(function(input, output){
       or.list = treat.prev/(1-treat.prev) / ( baseline.prev/(1-baseline.prev))  
       
       outLabel = "Treatment Prevalence"
-    } else if (input$trtSpec == 'Odds ratio under treatment') {
-      baseline.prev = isolate(as.numeric(input$baseline.prev.or))
+    } else if (input$trtSpec == 'Odds R') {
       or.vals     = isolate(as.numeric(input$or.list))
       or.vals.num = isolate(as.numeric(input$or.vals.num))
       
@@ -70,23 +64,20 @@ shinyServer(function(input, output){
     
     ### Begin simulation    
     for (or.i in or.list){
-    	#print (paste("Treatment Prevalent = ", treat.prev[ which(or.i == or.list)] ))
     	counter = 0
     	for (k in 1:n.iter){
-    		#if (k %% 50 == 0){ print( paste0("Iteration ", k, " of ", n.iter)  )}
-    		cluster.re = rnorm (cluster.num*2, 0, sqrt (cluster.var) ) 
-    		mu = cluster.re[ cluster.id ] + log(baseline.prev/(1-baseline.prev)) + treat.id*log(or.i)
+    		cluster.re <- rnorm(cluster.num*2, 0, sqrt (cluster.var) ) # XXX Replace this with analytical calculations for non-clustered designs
+    		mu = cluster.re[cluster.id] + log(baseline.prev/(1-baseline.prev)) + treat.id*log(or.i)
     		p = exp(mu)/(1+exp(mu))
     		Y = rbinom (length(mu), 1, p)
-    		fit = glmer(Y~treat.id + (1|cluster.id), family = "binomial") # NSM: Howard, I updated this since lmer with family = binom is now deprecated
-    		ests = coef(summary(fit)) # NSM: Howard, also seemed that the summary(fit)@coefs call was deprecated. This returns the desired result.
+    		fit = glmer(Y~treat.id + (1|cluster.id), family = "binomial") 
+    		ests = coef(summary(fit)) 
     		ests = ests[ grep("treat.id", row.names(ests)),]
     		if (ests[4] < alpha) { counter = counter + 1 }
     	} #End of iteration	
       
       xLabel <- ifelse(input$trtSpec == 'Odds ratio under treatment', or.i, treat.prev[which(or.i == or.list)])
     	Results = rbind (Results, c(xLabel, round(counter/n.iter, 3) ))
-    	#write.csv (Results, file = "PowerOut.csv") 
     
     } #End of ORs
     colnames(Results) <- c(outLabel, "Power")

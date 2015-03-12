@@ -8,17 +8,16 @@ shinyUI(fluidPage(
     column(4, 
       wellPanel(
         h4("Study Design"),
-        radioButtons(inputId = "design", label = "",
+        radioButtons(inputId = "design", label = NULL,
                      choices = c("RCT/Difference Between Groups", "Single Population Estimate", "LQAS"),
                      selected = NULL, inline = FALSE),
-        tags$br(),
-        checkboxInput("clusterDesign", "Clustered study design?", value = F)
+        checkboxInput("clusterDesign", "Clustered study design?", value = T)
       )
     ),
     column(4,
       wellPanel(
         h4("Outcome Type"),
-        radioButtons(inputId = "outcome", label = "",
+        radioButtons(inputId = "outcome", label = NULL,
                      choices = c("Binary", "Continuous", "Count"), selected = NULL, inline = FALSE)
       )
     ),
@@ -48,13 +47,12 @@ shinyUI(fluidPage(
         ),
         wellPanel(
           h4("Intra-Cluster Correlation (ICC)"),
-          #numericInput("cluster.var", "Variance", 0, min = 0), # Decided not to present this option, since interpretation was unclear to early users
           #tags$div(title = withMathJax("The equation for ICC is: $$\\frac{\\sigma^2_{Between}}{\\sigma^2_{Total}}$$"), # 
-            sliderInput("cluster.ICC", "", min = 0, max = 1, step = 0.01, value = 0.25),
+            sliderInput("cluster.ICC", "", label = NULL, min = 0, max = 1, step = 0.01, value = 0.25),
             p("ICC is the fraction of the total individual variance that is attributable to between-cluster variance. An ICC=0
               approximates an individually randomized controlled study. The larger the ICC is, the more important cluster
-              differences are in individual outcomes."),
-            withMathJax("The equation for ICC is: $$\\frac{\\sigma^2_{Between}}{\\sigma^2_{Total}}$$")
+              differences are in individual outcomes.")
+            #withMathJax("The equation for ICC is: $$\\frac{\\sigma^2_{Between}}{\\sigma^2_{Total}}$$")
           #)
         )
       ),
@@ -67,27 +65,26 @@ shinyUI(fluidPage(
       ),
       wellPanel(
         h4("Treatment Parameters"),
-        selectInput("trtSpec", "Method of entering treatment effect", c("Prevalence at baseline and treatment", "Odds ratio under treatment")),
+        sliderInput("baseline.prev", "Prevalence under control conditions",   min = 0, max = 1, step = 0.01, value = 0.8),
+        selectInput("trtSpec", "Method of entering treatment effect", c("Prevalence", "Odds Ratio")),
         conditionalPanel(
-          condition = "input.trtSpec == 'Prevalence at baseline and treatment'",
-          sliderInput("baseline.prev.trt", "Prevalence under control conditions",   min = 0, max = 1, step = 0.01, value = 0.8),
-          sliderInput("trt.prev",      "Prevalence under treatment conditions", min = 0, max = 1, step = 0.01, value = c(0.6, 0.8)),
-          numericInput("trt.vals.num",  "Number of values to test in this range", 5, min = 0, max = 100), # 50
+          condition = "input.trtSpec == 'Prevalence'",
+          sliderInput("trt.prev", "Prevalence under treatment conditions", min = 0, max = 1, step = 0.01, value = c(0.6, 0.8)),
+          numericInput("trt.vals.num",  "Number of values to test in this range", 5, min = 0, max = 100),
           p("Prevalence under control conditions can be estimated using either baseline values pilot data or the literature.
             Prevalence number treatment is the estimated minimum prevalence you want to detect.")
         ),
         conditionalPanel(
-          condition = "input.trtSpec == 'Odds ratio under treatment'",
-          sliderInput("baseline.prev.or", "Prevalence under control conditions",   min = 0, max = 1, step = 0.01, value = 0.8),
-          sliderInput("or.list",      "Odds ratio", min = 0, max = 1, step = 0.01, value = c(0.75, 1.00)),
-          numericInput("or.vals.num",  "Number of values to test in this range", 5, min = 0, max = 100), # 50
+          condition = "input.trtSpec == 'Odds Ratio'",
+          sliderInput("or.list", "Odds ratio", min = 0, max = 1, step = 0.01, value = c(0.75, 1.00)),
+          numericInput("or.vals.num",  "Number of values to test in this range", 5, min = 0, max = 100), 
           p("The odds ratio represents the treatment effect--relative to baseline--that you want to detect.") #, where values below zero represent a protective effect, and those above zero represent detrimental effects.
         )
       ),
       wellPanel(
         h4("Power and Simulation Parameters"),
         sliderInput("alpha", HTML("Alpha (&alpha;)"), 0.05, min = 0.01, max = 0.1, step = 0.01),
-        numericInput("n.iter", "Number of Simulation Iterations", 10, min = 1) # 500
+        numericInput("n.iter", "Number of Simulation Iterations", 10, min = 1)
       )
     ),
     column(6,
