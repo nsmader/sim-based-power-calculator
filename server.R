@@ -7,6 +7,7 @@ library(shiny)
 # http://stackoverflow.com/questions/23002712/shiny-what-is-the-option-setting-to-display-in-the-console-the-messages-between
 # ... which recommends the command: options(shiny.trace=TRUE)
 # http://rstudio.github.io/shiny/tutorial/#run-and-debug
+#options(shiny.trace=TRUE)
 
 shinyServer(function(input, output){
 
@@ -43,7 +44,7 @@ shinyServer(function(input, output){
     #########################
     
     if (input$trtSpec == 'Prevalence at baseline and treatment'){
-      baseline.prev = isolate(as.numeric(input$baseline.prev))
+      baseline.prev = isolate(as.numeric(input$baseline.prev.trt))
       trt.prev.min = isolate(as.numeric(input$trt.prev)[1])
       trt.prev.max = isolate(as.numeric(input$trt.prev)[2])
       trt.vals.num = isolate(as.numeric(input$trt.vals.num))
@@ -53,6 +54,7 @@ shinyServer(function(input, output){
       
       outLabel = "Treatment Prevalence"
     } else if (input$trtSpec == 'Odds ratio under treatment') {
+      baseline.prev = isolate(as.numeric(input$baseline.prev.or))
       or.vals     = isolate(as.numeric(input$or.list))
       or.vals.num = isolate(as.numeric(input$or.vals.num))
       
@@ -73,7 +75,7 @@ shinyServer(function(input, output){
     	for (k in 1:n.iter){
     		#if (k %% 50 == 0){ print( paste0("Iteration ", k, " of ", n.iter)  )}
     		cluster.re = rnorm (cluster.num*2, 0, sqrt (cluster.var) ) 
-    		mu = cluster.re[ cluster.id ] + treat.id*log(or.i)
+    		mu = cluster.re[ cluster.id ] + log(baseline.prev/(1-baseline.prev)) + treat.id*log(or.i)
     		p = exp(mu)/(1+exp(mu))
     		Y = rbinom (length(mu), 1, p)
     		fit = glmer(Y~treat.id + (1|cluster.id), family = "binomial") # NSM: Howard, I updated this since lmer with family = binom is now deprecated

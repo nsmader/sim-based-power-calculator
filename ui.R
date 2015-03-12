@@ -50,7 +50,7 @@ shinyUI(fluidPage(
         condition = "input.clusterDesign == false",
         wellPanel(
           h4("Sample Size"),
-          numericInput("sample.size", "Sample size per arm", 25, min = 1, max = 10000)
+          numericInput("sample.size", "Sample size per arm", 500, min = 1, max = 10000)
         )
       ),
       wellPanel(
@@ -58,7 +58,7 @@ shinyUI(fluidPage(
         selectInput("trtSpec", "Method of entering treatment effect", c("Prevalence at baseline and treatment", "Odds ratio under treatment")),
         conditionalPanel(
           condition = "input.trtSpec == 'Prevalence at baseline and treatment'",
-          sliderInput("baseline.prev", "Prevalence under control conditions",   min = 0, max = 1, step = 0.01, value = 0.8),
+          sliderInput("baseline.prev.trt", "Prevalence under control conditions",   min = 0, max = 1, step = 0.01, value = 0.8),
           sliderInput("trt.prev",      "Prevalence under treatment conditions", min = 0, max = 1, step = 0.01, value = c(0.6, 0.8)),
           numericInput("trt.vals.num",  "Number of values to test in this range", 5, min = 0, max = 100), # 50
           p("Prevalence under control conditions can be estimated using either baseline values pilot data or the literature.
@@ -66,6 +66,7 @@ shinyUI(fluidPage(
         ),
         conditionalPanel(
           condition = "input.trtSpec == 'Odds ratio under treatment'",
+          sliderInput("baseline.prev.or", "Prevalence under control conditions",   min = 0, max = 1, step = 0.01, value = 0.8),
           sliderInput("or.list",      "Odds ratio", min = 0, max = 1, step = 0.01, value = c(0.75, 1.00)),
           numericInput("or.vals.num",  "Number of values to test in this range", 5, min = 0, max = 100), # 50
           p("The odds ratio represents the treatment effect--relative to baseline--that you want to detect.") #, where values below zero represent a protective effect, and those above zero represent detrimental effects.
