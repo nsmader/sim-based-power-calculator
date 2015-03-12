@@ -5,29 +5,29 @@ library(shinyapps)
 shinyUI(fluidPage(
   titlePanel("Simulation-Based Statistical Power Calculator"),
   fluidRow(
-    column(4.5, 
+    column(4, 
       wellPanel(
         h4("Study Design"),
         radioButtons(inputId = "design", label = "",
                      choices = c("RCT/Difference Between Groups", "Single Population Estimate", "LQAS"),
                      selected = NULL, inline = FALSE),
         tags$br(),
-        checkboxInput("cluster.design", "Clustered study design?", value = F)
+        checkboxInput("clusterDesign", "Clustered study design?", value = F)
       )
     ),
-    column(4.5,
+    column(4,
       wellPanel(
         h4("Outcome Type"),
         radioButtons(inputId = "outcome", label = "",
                      choices = c("Binary", "Continuous", "Count"), selected = NULL, inline = FALSE)
       )
     ),
-    column(3,
+    column(4,
       wellPanel(
         h4("Longitudinal Design"),
-        checkboxInput("long.design", "Longitudinal study design?", value = F),
+        checkboxInput("longDesign", "Longitudinal study design?", value = F),
         conditionalPanel(
-          condition = "input.long.design == true",
+          condition = "input.longDesign == true",
           numericInput("long.followups", "Number of follow-ups", 1, min = 1, max = 10),
           sliderInput("long.ICC", "ICC for longitudinal measures", min = 0, max = 1, step = 0.01, value = 0.25)
         )
@@ -40,7 +40,7 @@ shinyUI(fluidPage(
         p(actionButton("runSim", "Run simulation", icon("bolt"))) # look here for all icons - http://fontawesome.io/icons/
       ),
       conditionalPanel(
-        condition = "input.cluster.design == true",
+        condition = "input.clusterDesign == true",
         wellPanel(
           h4("Sample Sizes"),
           numericInput("cluster.size", "Number of clusters per arm (m)", 25, min = 1, max = 1000), # 40
@@ -59,7 +59,7 @@ shinyUI(fluidPage(
         )
       ),
       conditionalPanel(
-        condition = "input.cluster.design == false",
+        condition = "input.clusterDesign == false",
         wellPanel(
           h4("Sample Size"),
           numericInput("sample.size", "Sample size per arm", 500, min = 1, max = 10000)
@@ -86,7 +86,7 @@ shinyUI(fluidPage(
       ),
       wellPanel(
         h4("Power and Simulation Parameters"),
-        numericInput("alpha", HTML("Alpha (&alpha;)"), 0.05, min = 0, max = 1),
+        sliderInput("alpha", HTML("Alpha (&alpha;)"), 0.05, min = 0.01, max = 0.1, step = 0.01),
         numericInput("n.iter", "Number of Simulation Iterations", 10, min = 1) # 500
       )
     ),

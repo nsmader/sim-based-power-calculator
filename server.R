@@ -31,7 +31,7 @@ shinyServer(function(input, output){
     cluster.var = ( cluster.ICC*pi^2/3)/(1-cluster.ICC)
     
     # Make modifications if not using a clustered design
-    if(input$cluster.design == F) {
+    if(input$clusterDesign == F) {
       cluster.num <- 1
       cluster.ICC <- 0
     }
