@@ -1,24 +1,36 @@
 # User interface for simulation-based statistical power calculator app
 # For starters, pulled UI code from https://github.com/rstudio/shiny-examples/blob/master/051-movie-explorer/ui.R
 library(shiny)
+library(shinyapps)
 shinyUI(fluidPage(
   titlePanel("Simulation-Based Statistical Power Calculator"),
   fluidRow(
-    column(6, 
+    column(4.5, 
       wellPanel(
         h4("Study Design"),
         radioButtons(inputId = "design", label = "",
                      choices = c("RCT/Difference Between Groups", "Single Population Estimate", "LQAS"),
                      selected = NULL, inline = FALSE),
         tags$br(),
-        checkboxInput("clusterDesign", "Clustered Study Design?", value = F)
+        checkboxInput("cluster.design", "Clustered study design?", value = F)
       )
     ),
-    column(6,
+    column(4.5,
       wellPanel(
         h4("Outcome Type"),
         radioButtons(inputId = "outcome", label = "",
                      choices = c("Binary", "Continuous", "Count"), selected = NULL, inline = FALSE)
+      )
+    ),
+    column(3,
+      wellPanel(
+        h4("Longitudinal Design"),
+        checkboxInput("long.design", "Longitudinal study design?", value = F),
+        conditionalPanel(
+          condition = "input.long.design == true",
+          numericInput("long.followups", "Number of follow-ups", 1, min = 1, max = 10),
+          sliderInput("long.ICC", "ICC for longitudinal measures", min = 0, max = 1, step = 0.01, value = 0.25)
+        )
       )
     )
   ),
@@ -28,26 +40,26 @@ shinyUI(fluidPage(
         p(actionButton("runSim", "Run simulation", icon("bolt"))) # look here for all icons - http://fontawesome.io/icons/
       ),
       conditionalPanel(
-        condition = "input.clusterDesign == true",
+        condition = "input.cluster.design == true",
         wellPanel(
           h4("Sample Sizes"),
           numericInput("cluster.size", "Number of clusters per arm (m)", 25, min = 1, max = 1000), # 40
           numericInput("cluster.num",  "Number of units per cluster (n)", 30, min = 1) # 128
         ),
         wellPanel(
-          h4("Inter-Cluster Correlation"),
+          h4("Intra-Cluster Correlation (ICC)"),
           #numericInput("cluster.var", "Variance", 0, min = 0), # Decided not to present this option, since interpretation was unclear to early users
-          tags$div(title = withMathJax("The equation for ICC is: $$\\frac{\\sigma^2_{Between}}{\\sigma^2_{Total}}$$"), # 
-            numericInput("cluster.ICC", "Amount of Intra-Cluster Correlation (ICC)", 0.028, min = 0),
+          #tags$div(title = withMathJax("The equation for ICC is: $$\\frac{\\sigma^2_{Between}}{\\sigma^2_{Total}}$$"), # 
+            sliderInput("cluster.ICC", "", min = 0, max = 1, step = 0.01, value = 0.25),
             p("ICC is the fraction of the total individual variance that is attributable to between-cluster variance. An ICC=0
               approximates an individually randomized controlled study. The larger the ICC is, the more important cluster
               differences are in individual outcomes."),
             withMathJax("The equation for ICC is: $$\\frac{\\sigma^2_{Between}}{\\sigma^2_{Total}}$$")
-          )
+          #)
         )
       ),
       conditionalPanel(
-        condition = "input.clusterDesign == false",
+        condition = "input.cluster.design == false",
         wellPanel(
           h4("Sample Size"),
           numericInput("sample.size", "Sample size per arm", 500, min = 1, max = 10000)
