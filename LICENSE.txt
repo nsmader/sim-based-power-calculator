@@ -1,8 +1,7 @@
-Software created for the Chapin Hall Collaborative of Youth Support
-Service Providers provides a means to link, analyze and report data
-on youth populations served by a range of human service agencies.
+Software created for use by researchers to design studies with the
+appropriate amount of statistical power to detect hypothesized effects.
 
-Copyright (C) 2014 Chapin Hall
+Copyright (C) 2015 Nick Mader
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
