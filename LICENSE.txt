@@ -1,7 +1,7 @@
 Software created for use by researchers to design studies with the
 appropriate amount of statistical power to detect hypothesized effects.
 
-Copyright (C) 2015 Nick Mader
+Copyright (C) 2015 Nick Mader and Emory University
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
