@@ -51,7 +51,7 @@ shinyServer(function(input, output){
     } else if (input$trtSpec == 'Odds R') {
       or.vals     = isolate(as.numeric(input$or.list))
       or.vals.num = isolate(as.numeric(input$or.vals.num))
-      
+      print(paste("or.vals is ", or.vals))
       or.list = seq(or.vals[2], or.vals[1], length.out = or.vals.num)
       
       outLabel = "Odds Ratio"

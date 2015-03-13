@@ -37,8 +37,8 @@ shinyUI(fluidPage(
         condition = "input.clusterDesign == true",
         wellPanel(
           h4("Sample Sizes"),
-          numericInput("cluster.size", "Number of clusters per arm (m)", 25, min = 1, max = 1000), # 40
-          numericInput("cluster.num",  "Number of units per cluster (n)", 30, min = 1) # 128
+          numericInput("cluster.size", "Number of clusters per arm (m)", 25, min = 1, max = 1000),
+          numericInput("cluster.num",  "Number of units per cluster (n)", 40, min = 1)
         ),
         wellPanel(
           h4("Intra-Cluster Correlation (ICC)"),
