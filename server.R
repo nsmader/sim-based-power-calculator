@@ -34,8 +34,11 @@ shinyServer(function(input, output){
       cluster.ICC <- 0
     }
     
-    n.iter = isolate(as.integer(input$n.iter))
+    nSim   = isolate(as.numeric(input$n.iter))
     alpha  = isolate(as.numeric(input$alpha))
+    print(paste("nSim =", nSim))
+    output$iter  <- renderText(paste("Number of simulations is", nSim))
+    output$cores <- renderText(paste("Number of utilized cores is", getDoParWorkers()))
     
     #########################
     ### Set up simulation ###
@@ -68,7 +71,7 @@ shinyServer(function(input, output){
     
     ### Begin simulation    
     for (or.i in or.list){
-    	vIsSig <- foreach(1:n.iter, .combine = rbind) %dopar% {
+    	vIsSig <- foreach(1:nSim, .combine = rbind) %dopar% {
         library(lme4)
 #       vIsSig <- NULL
 #       for(k in 1:n.iter){
@@ -86,7 +89,7 @@ shinyServer(function(input, output){
       counter <- sum(vIsSig)
   
       xLabel <- ifelse(input$trtSpec == 'Odds ratio under treatment', or.i, treat.prev[which(or.i == or.list)])
-    	Results = rbind (Results, c(xLabel, round(counter/n.iter, 3) ))
+    	Results = rbind (Results, c(xLabel, round(counter/nSim, 3) ))
     
     } #End of ORs
     colnames(Results) <- c(outLabel, "Power")
@@ -101,8 +104,6 @@ shinyServer(function(input, output){
   
   # Table output
   output$table <- renderTable(Results())
-  
-  output$cores <- renderText(paste("Number of utilized cores is", getDoParWorkers()))
   
   output$downloadData <- downloadHandler(
     filename = "sim-results-out.csv",
