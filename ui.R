@@ -87,7 +87,8 @@ shinyUI(fluidPage(
     ),
     column(2,
       tableOutput("table"),
-      downloadButton('downloadData', 'Download table of results')
+      downloadButton('downloadData', 'Download table of results'),
+      textOutput("cores")
     )
   )
 ))

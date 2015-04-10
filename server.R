@@ -1,7 +1,9 @@
 ### Server-side code for dispatching runs of simulation-based power calculations ###
 
-library(lme4) 
+library(lme4)
 library(shiny)
+library(foreach)
+library(doParallel)
 
 # See following links for ideas on debugging Shiny apps code
 # http://stackoverflow.com/questions/23002712/shiny-what-is-the-option-setting-to-display-in-the-console-the-messages-between
@@ -10,7 +12,9 @@ library(shiny)
 #options(shiny.trace=TRUE)
 
 shinyServer(function(input, output){
-
+  
+  registerDoParallel(cores = detectCores())
+  
   Results <- reactive({
     input$runSim # NSM: This creates dependency (i.e. will rerun this code) every time the "run sim" button is clicked.
                  #      The trick is to isolate this run from all other changes of parameters, until the user is ready 
@@ -18,7 +22,7 @@ shinyServer(function(input, output){
     
     # Isolate all of the following assignments to not allow them to run until the "Run Sim" button is clicked
     # Great description of isolation: http://shiny.rstudio.com/articles/isolation.html
-    cluster.num = isolate(as.integer(input$cluster.num))
+    cluster.num  = isolate(as.integer(input$cluster.num))
     cluster.size = isolate(as.integer(input$cluster.size))
     
     cluster.ICC = isolate(as.numeric(input$cluster.ICC))
@@ -64,8 +68,10 @@ shinyServer(function(input, output){
     
     ### Begin simulation    
     for (or.i in or.list){
-    	counter = 0
-    	for (k in 1:n.iter){
+    	vIsSig <- foreach(1:n.iter, .combine = rbind) %dopar% {
+        library(lme4)
+#       vIsSig <- NULL
+#       for(k in 1:n.iter){
     		cluster.re <- rnorm(cluster.num*2, 0, sqrt (cluster.var) ) # XXX Replace this with analytical calculations for non-clustered designs
     		mu = cluster.re[cluster.id] + log(baseline.prev/(1-baseline.prev)) + treat.id*log(or.i)
     		p = exp(mu)/(1+exp(mu))
@@ -73,9 +79,12 @@ shinyServer(function(input, output){
     		fit = glmer(Y~treat.id + (1|cluster.id), family = "binomial") 
     		ests = coef(summary(fit)) 
     		ests = ests[ grep("treat.id", row.names(ests)),]
-    		if (ests[4] < alpha) { counter = counter + 1 }
+        isSig <- ests[4] < alpha
+    		return(isSig) # Column 4 has the p-value for the treatment variable
+#         vIsSig <- rbind(vIsSig, isSig)
     	} #End of iteration	
-      
+      counter <- sum(vIsSig)
+  
       xLabel <- ifelse(input$trtSpec == 'Odds ratio under treatment', or.i, treat.prev[which(or.i == or.list)])
     	Results = rbind (Results, c(xLabel, round(counter/n.iter, 3) ))
     
@@ -92,6 +101,8 @@ shinyServer(function(input, output){
   
   # Table output
   output$table <- renderTable(Results())
+  
+  output$cores <- renderText(paste("Number of utilized cores is", getDoParWorkers()))
   
   output$downloadData <- downloadHandler(
     filename = "sim-results-out.csv",
