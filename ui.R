@@ -24,7 +24,7 @@ shinyUI(fluidPage(
         conditionalPanel(
           condition = "input.longDesign == true",
           numericInput("long.followups", "Number of follow-ups", 1, min = 1, max = 10),
-          sliderInput("long.ICC", "ICC for longitudinal measures", min = 0, max = 1, step = 0.01, value = 0.25)
+          sliderInput("long.ICC", "ICC for longitudinal measures", min = 0.0, max = 1.0, step = 0.01, value = 0.25)
         )
       )
     )

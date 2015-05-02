@@ -2,6 +2,7 @@
 
 library(lme4)
 library(shiny)
+library(shinyapps)
 library(foreach)
 library(doParallel)
 
@@ -12,8 +13,6 @@ library(doParallel)
 #options(shiny.trace=TRUE)
 
 shinyServer(function(input, output){
-  
-  registerDoParallel(cores = detectCores())
   
   Results <- reactive({
     input$runSim # NSM: This creates dependency (i.e. will rerun this code) every time the "run sim" button is clicked.
@@ -70,6 +69,9 @@ shinyServer(function(input, output){
     Results = NULL
     
     ### Begin simulation    
+    cl <- makeCluster(detectCores())
+    registerDoParallel(cl)
+    
     for (or.i in or.list){ # NSM: Could farm this into the foreach by making a runlist permuting or.list and nSim, whose rows are fed into the foreach
     	vIsSig <- foreach(1:nSim, .combine = rbind) %dopar% {
         library(lme4)
@@ -97,6 +99,8 @@ shinyServer(function(input, output){
     	Results = rbind (Results, c(xLabel, round(counter/nSim, 3) ))
     
     } #End of ORs
+    stopCluster(cl)
+
     colnames(Results) <- c(outLabel, "Power")
     rownames(Results) <- NULL
     Results
