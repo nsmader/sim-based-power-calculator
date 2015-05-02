@@ -50,17 +50,18 @@ shinyServer(function(input, output){
       trt.prev.max = isolate(as.numeric(input$trt.prev)[2])
       trt.vals.num = isolate(as.numeric(input$trt.vals.num))
       
-      treat.prev = rev(seq (trt.prev.min, trt.prev.max, length.out = trt.vals.num))
+      treat.prev = seq(trt.prev.min, trt.prev.max, length.out = trt.vals.num)
       or.list = treat.prev/(1-treat.prev) / ( baseline.prev/(1-baseline.prev))  
       
       outLabel = "Treatment Prevalence"
-    } else if (input$trtSpec == 'Odds R') {
+      labelVals <- treat.prev
+    } else if (input$trtSpec == 'Odds Ratio') {
       or.vals     = isolate(as.numeric(input$or.list))
       or.vals.num = isolate(as.numeric(input$or.vals.num))
-      print(paste("or.vals is ", or.vals))
-      or.list = seq(or.vals[2], or.vals[1], length.out = or.vals.num)
+      or.list = seq(or.vals[1], or.vals[2], length.out = or.vals.num)
       
       outLabel = "Odds Ratio"
+      labelVals <- or.list
     }
     
     cluster.id = rep(1:(cluster.num*2), each = cluster.size)
@@ -95,7 +96,7 @@ shinyServer(function(input, output){
     	} #End of iteration	
       counter <- sum(vIsSig)
   
-      xLabel <- ifelse(input$trtSpec == 'Odds ratio under treatment', or.i, treat.prev[which(or.i == or.list)])
+      xLabel <- labelVals[which(or.i == or.list)]
     	Results = rbind (Results, c(xLabel, round(counter/nSim, 3) ))
     
     } #End of ORs

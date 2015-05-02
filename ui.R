@@ -6,19 +6,19 @@ shinyUI(fluidPage(
   titlePanel("Simulation-Based Statistical Power Calculator"),
   wellPanel(
     fluidRow(
-      column(4, 
+      column(3, 
         h4("Study Design"),
         radioButtons(inputId = "design", label = NULL,
                      choices = c("RCT/Difference Between Groups", "Single Population Estimate", "LQAS"),
                      selected = NULL, inline = FALSE),
         checkboxInput("clusterDesign", "Clustered study design?", value = T)
       ),
-      column(4,
+      column(3,
         h4("Outcome Type"),
         radioButtons(inputId = "outcome", label = NULL,
                      choices = c("Binary", "Continuous", "Count"), selected = NULL, inline = FALSE)
       ),
-      column(4,
+      column(3,
         h4("Longitudinal Design"),
         checkboxInput("longDesign", "Longitudinal study design?", value = F),
         conditionalPanel(
