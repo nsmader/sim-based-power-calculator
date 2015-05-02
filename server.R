@@ -70,20 +70,25 @@ shinyServer(function(input, output){
     Results = NULL
     
     ### Begin simulation    
-    for (or.i in or.list){
+    for (or.i in or.list){ # NSM: Could farm this into the foreach by making a runlist permuting or.list and nSim, whose rows are fed into the foreach
     	vIsSig <- foreach(1:nSim, .combine = rbind) %dopar% {
         library(lme4)
-#       vIsSig <- NULL
+#       vIsSig <- NULL # Initialize the vector of indicators 
 #       for(k in 1:n.iter){
-    		cluster.re <- rnorm(cluster.num*2, 0, sqrt (cluster.var) ) # XXX Replace this with analytical calculations for non-clustered designs
+        # XXX The code that follows is just one type of research design, and one type of power calculation of interest
+        #     to the user. The below should be made to be modular to different designs or different power calcs, e.g.
+        #     analytical calculations for non-clustered designs, etc.
+        # The code below could be written as a function to be called with:
+        #   cluster.id, treat.id, cluster.num, cluster.var, baseline.prev, and or.i
+    		cluster.re <- rnorm(cluster.num*2, 0, sqrt (cluster.var) )
     		mu = cluster.re[cluster.id] + log(baseline.prev/(1-baseline.prev)) + treat.id*log(or.i)
     		p = exp(mu)/(1+exp(mu))
     		Y = rbinom (length(mu), 1, p)
     		fit = glmer(Y~treat.id + (1|cluster.id), family = "binomial") 
     		ests = coef(summary(fit)) 
     		ests = ests[ grep("treat.id", row.names(ests)),]
-        isSig <- ests[4] < alpha
-    		return(isSig) # Column 4 has the p-value for the treatment variable
+        isSig <- ests[4] < alpha # Column 4 has the p-value for the treatment variable
+    		return(isSig)
 #         vIsSig <- rbind(vIsSig, isSig)
     	} #End of iteration	
       counter <- sum(vIsSig)

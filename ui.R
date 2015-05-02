@@ -4,7 +4,8 @@ library(shiny)
 library(shinyapps)
 shinyUI(fluidPage(
   titlePanel("Simulation-Based Statistical Power Calculator"),
-  fluidRow(
+  wellPanel(
+    fluidRow(
       column(4, 
         h4("Study Design"),
         radioButtons(inputId = "design", label = NULL,
@@ -26,6 +27,7 @@ shinyUI(fluidPage(
           sliderInput("long.ICC", "ICC for longitudinal measures", min = 0, max = 1, step = 0.01, value = 0.25)
         )
       )
+    )
   ),
   br(), hr(), br(),
   fluidRow(
