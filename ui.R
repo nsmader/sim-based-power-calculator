@@ -52,9 +52,9 @@ shinyUI(fluidPage(
             numericInput("power",       "Power",       0.8, min = 0.0, max = 1.0),
             numericInput("effect.size", "Effect size", 0.5, min = 0,   max = 4),
           ),
-          conditionalPanel(condition = "input.clusterRequest == 'power vs. effect size'",
-            numericInput("effect.size", "Effect size",        0.5, min = 0, max = 4),
-            numericInput("cluster.num", "Number of clusters", 20,  min = 1, max = 100),
+          conditionalPanel(condition = "input.clusterRequest == 'power vs. cluster size'",
+            numericInput("cluster.size", "Effect size",        0.5, min = 0, max = 4),
+            numericInput("cluster.num",  "Number of clusters", 20,  min = 1, max = 100),
           ),
           conditionalPanel(condition = "input.clusterRequest == 'effect size vs. cluster size'",
             numericInput("power",       "Power",              0.8, min = 0.0, max = 1.0),
@@ -66,12 +66,13 @@ shinyUI(fluidPage(
           )
         ),
         wellPanel(
-          h4("Intra-Cluster Correlation (ICC)"),
+          h4("Power parameters"),
+          numericInput("resid.var", "Residual variation", 1.0,  min = 0.01,   max = 10.0),
           #tags$div(title = withMathJax("The equation for ICC is: $$\\frac{\\sigma^2_{Between}}{\\sigma^2_{Total}}$$"), # 
-            sliderInput("cluster.ICC", "", label = NULL, min = 0, max = 1, step = 0.01, value = 0.25),
-            p("ICC is the fraction of the total individual variance that is attributable to between-cluster variance. An ICC=0
-              approximates an individually randomized controlled study. The larger the ICC is, the more important cluster
-              differences are in individual outcomes.")
+          sliderInput("cluster.ICC", "", label = "Intra-Cluster Correlation (ICC)", min = 0, max = 1, step = 0.01, value = 0.25),
+          p("ICC is the fraction of the total individual variance that is attributable to between-cluster variance. An ICC=0
+            approximates an individually randomized controlled study. The larger the ICC is, the more important cluster
+          differences are in individual outcomes.")
             #withMathJax("The equation for ICC is: $$\\frac{\\sigma^2_{Between}}{\\sigma^2_{Total}}$$")
           #)
         )

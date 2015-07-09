@@ -6,6 +6,9 @@ library(shinyapps)
 library(foreach)
 library(doParallel)
 
+setwd("~/GitHub/sim-based-power-calculator") # /!\ Should remove this before deploying
+source("./power-fns.R")
+
 # See following links for ideas on debugging Shiny apps code
 # http://stackoverflow.com/questions/23002712/shiny-what-is-the-option-setting-to-display-in-the-console-the-messages-between
 # ... which recommends the command: options(shiny.trace=TRUE)
@@ -18,50 +21,49 @@ shinyServer(function(input, output){
     
     # Isolate all of the following assignments to not allow them to run until the "Run Sim" button is clicked
     # Great description of isolation: http://shiny.rstudio.com/articles/isolation.html
-    alpha  = isolate(as.numeric(input$alpha))
+    alpha  = reactive(as.numeric(input$alpha))
+    resid.var = reactive(as.numeric(input$resid.var))
     
     # Make modifications if not using a clustered design
-    # XXX Writing pseudo-code here
     if (input$clusterDesign == T){
-      cluster.ICC = isolate(as.numeric(input$cluster.ICC))
+      cluster.ICC = reactive(as.numeric(input$cluster.ICC))
       cluster.var = ( cluster.ICC*pi^2/3)/(1-cluster.ICC)
-      cluster.num  = isolate(as.integer(input$cluster.num))
-      cluster.size = isolate(as.integer(input$cluster.size))
+#       cluster.num  = isolate(as.integer(input$cluster.num))
+#       cluster.size = isolate(as.integer(input$cluster.size))
     } else {
       cluster.num <- 1
       cluster.ICC <- 0
     }
     
     if (input$outcomeType == "cts") {
-      # Bring in outcome under non-intervention
-      # Power, effect size, cluster size
+
       if (input$clusterDesign == T){
         
-        # 1. specify power and effect size ------> receive cluster size vs. # clusters (discrete)
-          if (input$clusterRequest == "getClusterSize_clusterNum"){
-            outTable <- data.frame(NULL)
-            for (clusterNum in clusterNumRange){
-              outTable <- rbind(outTable, 
-                                data.frame(clusterNum = clusterNum,
-                                           clusterSize = ctsClus_getClusterSize(power, clusterNum, effectSize)))
-            }
+        # 1. specify power and effect size --> receive cluster size vs. # clusters (discrete)
+          # /!\ Minor note--could redo this sequence of if()s to be a switch()
+          if (input$clusterRequest == "cluster size vs. # clusters"){
+            power       <- reactive(as.numeric(input$power))
+            effect.size <- reactive(as.numeric(input$effect.size))
+            clusterNums = 1:50
+            #plotTable <- data.frame(clusterNums, clusterSize = ctsClus_getClusterSize_clusterNum ( clusterNums ))
+              # XXX Not yet defined            
             # Plot results curve
           }
            
-        # 2. specify cluster size and # clusters -> receive power vs. effect size
-          if (input$clusterRequest == "getPower_effectSize"){
-            outTable <- data.frame(NULL)
-            for (power in powerRange){
-              outTable <- rbind(outTable, 
-                                data.frame(power = power,
-                                           effectSize = ctsClus_getEffectSize(power, clusterNum, clusterSize)))
-            }
+        # 2. specify cluster size and # clusters --> receive power vs. effect size
+          if (input$clusterRequest == "power vs. effect size"){
+            cluster.size <- reactive(as.numeric(input$cluster.size))
+            cluster.num  <- reactive(as.numeric(input$cluster.num))
+            effectSizes = seq(0, 2, by = 0.1)
+            plotTable <- data.frame(effectSizes, power = ctsClus_getpower_effectSize(EffectSizes))
             # Plot results curve
             # Add text that specifies "To achieve 80% power you need an effect size of ___"
           }
 
         # 3. specify power and # clusters -------> receive effect size vs. cluster size
-          if (input$clusterRequest == "getEffectSize_clusterSize"){
+          if (input$clusterRequest == "effect size vs. cluster size"){
+            power        <- reactive(as.numeric(input$power))
+            cluster.num  <- reactive(as.numeric(input$cluster.num))
             outTable <- data.frame(NULL)
             for (clusterSize in clusterSizeRange){
               outTable <- rbind(outTable, 
@@ -72,13 +74,11 @@ shinyServer(function(input, output){
           }
 
         # 4. specify power and cluster size ------> receive effect size vs. # clusters (discrete)
-          if (input$clusterRequest == "getEffectSize_clusterNum"){
-            outTable <- data.frame(NULL)
-            for (clusterNum in clusterNumRange){
-              outTable <- rbind(outTable, 
-                                data.frame(clusterSize = clusterSize,
-                                           effectSize = ctsClus_getEffectSize(power, clusterNum, clusterSize)))
-            }
+          if (input$clusterRequest == "effect size vs. # clusters"){
+            cluster.size <- reactive(input$cluster.size)
+            power        <- reactive(input$power)
+            clusterNums <- 1:50
+            plotTable <- data.frame(clusterNum, effectSize = ctsClus_getEffectSize_clusterNum(1:50))
             # Plot results curve
           }
       } else {
