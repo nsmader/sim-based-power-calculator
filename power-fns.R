@@ -25,17 +25,17 @@
   # Cluster-randomized Designs
   #---------------------------
     
-    ctsClus_getEffectSize_clusterNum <- function (clusterNum.list){
+    ctsClus_getEffectSize_clusterNum <- function (clusterNum.list, cluster.size, power){
       f = function(x){ uniroot (helper_effsize, interval = c(0, 100), cluster.size, cluster.num = x, power)$root}
       sapply(clusterNum.list, function(x){f(x)} )
     }
     
-    ctsClus_getEffectSize_clusterSize <- function (clusterSize.list){
+    ctsClus_getEffectSize_clusterSize <- function (clusterSize.list, cluster.num, power){
       f = function(x){ uniroot (helper_effsize, interval = c(0, 100), cluster.size = x, cluster.num, power)$root}
       sapply(clusterSize.list, function(x){f(x)} )
     }
     
-    ctsClus_getclusterSize_effectSize <- function (effectSize.list){
+    ctsClus_getclusterSize_effectSize <- function (effectSize.list, cluster.num, power){
       
       clusterSize.seq = 1:200
       f = function(y){ 
@@ -47,7 +47,7 @@
       sapply(effectSize.list, function(x){f(x)} )
     }  
     
-    ctsClus_getclusterNum_effectSize <- function (effectSize.list){
+    ctsClus_getclusterNum_effectSize <- function (effectSize.list, cluster.size, power){
     
       clusterNum.seq = 1:200
       f = function(y){ 
@@ -59,7 +59,7 @@
       sapply(effectSize.list, function(x){f(x)} )
     }  
     
-    ctsClus_getpower_effectSize <- function (effectSize.list){
+    ctsClus_getpower_effectSize <- function (effectSize.list, cluster.num, cluster.size){
       sapply(effectSize.list, function(x){
         helper_power (eff.size=x, cluster.num, cluster.size) } 
       )

@@ -61,7 +61,7 @@ shinyUI(fluidPage(
             numericInput("power",       "Power",       0.8, min = 0.0, max = 1.0),
             numericInput("effect.size", "Effect size", 0.5, min = 0,   max = 4)
           ),
-          conditionalPanel(condition = "input.clusterRequest == 'power vs. cluster size'",
+          conditionalPanel(condition = "input.clusterRequest == 'power vs. effect size'",
             numericInput("cluster.size", "Effect size",        0.5, min = 0, max = 4),
             numericInput("cluster.num",  "Number of clusters", 20,  min = 1, max = 100)
           ),
@@ -101,7 +101,7 @@ shinyUI(fluidPage(
 #       )
     ),
     column(6,
-      plotOutput("plot1")
+      plotOutput("plotOut")
     )
 #     ,column(2,
 #       tableOutput("table"),
