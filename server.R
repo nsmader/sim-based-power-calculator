@@ -7,9 +7,6 @@ library(foreach)
 library(doParallel)
 library(ggplot2)
 
-setwd("~/GitHub/sim-based-power-calculator") # /!\ Should remove this before deploying
-source("./power-fns.R")
-
 # See following links for ideas on debugging Shiny apps code
 # http://stackoverflow.com/questions/23002712/shiny-what-is-the-option-setting-to-display-in-the-console-the-messages-between
 # ... which recommends the command: options(shiny.trace=TRUE)
