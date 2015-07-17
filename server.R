@@ -1,4 +1,10 @@
 ### Server-side code for dispatching runs of simulation-based power calculations ###
+package_list <- c("lme4", "shiny","foreach","doParallel","devtools")
+new_packages <- package_list[!(package_list %in% installed.packages()[,"Package"])]
+new_packages_cran <- new_packages[(new_packages %in% available.packages()[,"Package"])]
+new_packages_devtools <- new_packages[!(new_packages %in% available.packages()[,"Package"])]
+if(length(new_packages_cran)!=0) install.packages(new_packages_cran)
+if(!("shinyapps" %in% installed.packages()[,"Package"])) devtools::install_github("rstudio/shinyapps")
 
 library(lme4)
 library(shiny)
