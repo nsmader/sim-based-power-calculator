@@ -4,19 +4,31 @@ library(shiny)
 library(shinyapps)
 shinyUI(fluidPage(
   titlePanel("Experimental Design Power Calculator"), # Simulation-Based Statistical 
+{ 
   wellPanel(
     fluidRow(
       column(3, 
         h4("Study Design"),
-        radioButtons(inputId = "design", label = NULL,
-                     choices = c("RCT/Difference Between Groups", "Single Population Estimate (inactive)", "LQAS (inactive)"), 
-                     selected = NULL, inline = FALSE),
-        checkboxInput("clusterDesign", "Clustered study design?", value = T)
+        radioButtons(inputId = "design",
+                     label = NULL,
+                     choices = c("RCT/Difference Between Groups",
+                                 "Single Population Estimate (inactive)",
+                                 "LQAS (inactive)"), 
+                     selected = NULL,
+                     inline = FALSE),
+        checkboxInput(inputId = "clusterDesign",
+                      label = "Clustered study design?",
+                      value = TRUE)
       ),
       column(3,
         h4("Outcome Type"),
-        radioButtons(inputId = "outcome", label = NULL,
-                     choices = c("Continuous", "Binary (inactive)", "Count (inactive)"), selected = NULL, inline = FALSE)
+        radioButtons(inputId = "outcomeType",
+                     label = NULL,
+                     choices = c("Continuous",
+                                 "Binary (inactive)",
+                                 "Count (inactive)"),
+                     selected = NULL,
+                     inline = FALSE)
       ),
       column(3,
         h4("Longitudinal Design (inactive)"),
@@ -28,13 +40,12 @@ shinyUI(fluidPage(
         )
       )
     )
-  ),
+  )
+}, # This is the header control panel
   #br(), hr(), br(),
   fluidRow(
+{
     column(3,
-#       wellPanel(
-#         p(actionButton("runSim", "Run simulation", icon("bolt"))) # look here for all icons - http://fontawesome.io/icons/
-#       ),
       wellPanel(
         h4("Power parameters"),
         sliderInput("alpha", HTML("Alpha (&alpha;)"), 0.05, min = 0.01, max = 0.1, step = 0.01),
@@ -51,19 +62,23 @@ shinyUI(fluidPage(
       ),
       conditionalPanel(condition = "input.clusterDesign == true",
         wellPanel(
+          p(actionButton("updateCalc", "Update calculation", icon("bolt"))),
           h4("Specify Request"),
-          selectInput("clusterRequest", "What relationship do you need to explore?",
-                      c("cluster size vs. # clusters",
-                        "power vs. effect size",
-                        "effect size vs. cluster size",
-                        "effect size vs. # clusters")),
+          selectInput(inputId = "clusterRequest",
+                      label = "What relationship do you need to explore?",
+                      choices = c("cluster size vs. # clusters",
+                                  "power vs. effect size",
+                                  "effect size vs. cluster size",
+                                  "effect size vs. # clusters"),
+                      selected = "power vs. effect size"),
           conditionalPanel(condition = "input.clusterRequest == 'cluster size vs. # clusters'",
-            numericInput("power",       "Power",       0.8, min = 0.0, max = 1.0),
+            numericInput(inputId = "power",
+                         label   = "Power",       0.8, min = 0.0, max = 1.0),
             numericInput("effect.size", "Effect size", 0.5, min = 0,   max = 4)
           ),
           conditionalPanel(condition = "input.clusterRequest == 'power vs. effect size'",
-            numericInput("cluster.size", "Effect size",        0.5, min = 0, max = 4),
-            numericInput("cluster.num",  "Number of clusters", 20,  min = 1, max = 100)
+            numericInput("cluster.size", "Sample size per cluster", 50, min = 1, max = 1000),
+            numericInput("cluster.num",  "Number of clusters",      20, min = 1, max = 100)
           ),
           conditionalPanel(condition = "input.clusterRequest == 'effect size vs. cluster size'",
             numericInput("power",       "Power",              0.8, min = 0.0, max = 1.0),
@@ -77,8 +92,35 @@ shinyUI(fluidPage(
       ),
       conditionalPanel(condition = "input.clusterDesign == false",
         wellPanel(
-          h4("Sample Size"),
-          numericInput("sample.size", "Sample size per arm", 500, min = 1, max = 10000)
+          p(actionButton("updateCalc", "Update calculation", icon("bolt"))), # look here for all icons - http://fontawesome.io/icons/
+          h4("Specify Request"),
+          selectInput(inputId = "indvRequest",
+                      label = "What relationship do you need to explore?",
+                      choices = c("power vs. sample size",
+                                  "power vs. effect size",
+                                  "effect size vs. sample size"),
+                      selected = "power vs. effect size"),
+          conditionalPanel(condition = "input.indvRequest == 'power vs. sample size'",
+            numericInput(inputId = "effect.size",
+                         label = "Effect size",
+                         value = 0.5,
+                         min = 0,
+                         max = 4)
+          ),
+          conditionalPanel(condition = "input.indvRequest == 'power vs. effect size'",
+            numericInput(inputId = "sample.size",
+                         label = "Sample size",
+                         value = 50,
+                         min = 1,
+                         max = 1000)
+          ),
+          conditionalPanel(condition = "input.indvRequest == 'effect size vs. sample size'",
+            numericInput(inputId = "power",
+                         label = "Power",
+                         value = 0.8,
+                         min = 0.0,
+                         max = 1.0)
+          )
         )
       )
 #       wellPanel(
@@ -99,7 +141,8 @@ shinyUI(fluidPage(
 #           p("The odds ratio represents the treatment effect--relative to baseline--that you want to detect.") #, where values below zero represent a protective effect, and those above zero represent detrimental effects.
 #         )
 #       )
-    ),
+    )
+}, # This is the left-hand control panel
     column(6,
       plotOutput("plotOut")
     )
