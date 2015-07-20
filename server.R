@@ -11,12 +11,12 @@ library(ggplot2)
 # http://stackoverflow.com/questions/23002712/shiny-what-is-the-option-setting-to-display-in-the-console-the-messages-between
 # ... which recommends the command: options(shiny.trace=TRUE)
 # http://rstudio.github.io/shiny/tutorial/#run-and-debug
-#options(shiny.trace=TRUE)
+options(shiny.trace=FALSE)
 
 shinyServer(function(input, output){
   
-  alpha     = reactive(as.numeric(input$alpha))
-  resid.var = reactive(as.numeric(input$resid.var))
+  alpha     <- reactive(as.numeric(input$alpha))
+  resid.var <- reactive(as.numeric(input$resid.sd)^2)
   
   # Make modifications if not using a clustered design
   cluster.num <- reactive(ifelse(input$clusterDesign == FALSE, 1, as.numeric(input$cluster.num)))
@@ -35,35 +35,43 @@ shinyServer(function(input, output){
       # 1. specify power and effect size --> receive cluster size vs. # clusters (discrete)
         # /!\ Minor note--could redo this sequence of if()s to be a switch()
         if (input$clusterRequest == "cluster size vs. # clusters"){
-          power       <- reactive(as.numeric(input$power))
-          effect.size <- reactive(as.numeric(input$effect.size))
+          
+          power       <- reactive(as.numeric(input$power_sn))
+          effect.size <- reactive(as.numeric(input$effect.size_sn))
           clusterNums = 1:50
           
-          #plotTable <- data.frame(clusterNum = clusterNums, clusterSize = ctsClus_getClusterSize_clusterNum ( clusterNums ))
-            # XXX Not yet defined
-#             plotOut <- ggplot(plotTable(), aes(x = clusterNum, y = clusterSize)) +
-#               geom_line(colour = "blue", size = 1) +
-#               ggtitle(paste("Cluster Size vs. # of Clusters\nto obtain at least", sprintf("%3.2f", power()), "with effect size", sprintf("%3.2f", effect.size()))) +
-#               xlab("# Clusters") +
-#               ylab("Cluster Size")
+          plotTable <- reactive(data.frame(clusterNum = clusterNums,
+                                           clusterSize = ctsClus_getClusterSize_clusterNum(clusterNum.list = clusterNums,
+                                                                                           effect.size = effect.size(),
+                                                                                           resid.var = resid.var(),
+                                                                                           cluster.var = cluster.var(),
+                                                                                           alpha = alpha())))
+          myPlot <- ggplot(plotTable(), aes(x = clusterNum, y = clusterSize)) +
+            # geom_smooth(se = FALSE, method = "loess", size = 1, colour = "blue") +
+            geom_line(size = 1, colour = "blue") +
+            ggtitle(paste("Cluster Size vs. # of Clusters\nto obtain at least", sprintf("%3.2f", power()), "with effect size", sprintf("%3.2f", effect.size()))) +
+            xlab("# Clusters") +
+            ylab("Cluster Size")
+          return(myPlot)
         }
          
       # 2. specify cluster size and # clusters --> receive power vs. effect size
         if (input$clusterRequest == "power vs. effect size"){
-          cat("In power vs. effect size")
-          cluster.size <- reactive(as.numeric(input$cluster.size))
-          cluster.num  <- reactive(as.numeric(input$cluster.num))
-          effectSizes = seq(0, 2, by = 0.05)
+
+          cluster.size <- reactive(as.numeric(input$cluster.size_pe))
+          cluster.num  <- reactive(as.numeric(input$cluster.num_pe))
+          effectSizes <- reactive(pretty(seq(0, 2*sqrt(resid.var()), length = 40), n = 40))
           
-          plotTable <- reactive(data.frame(effectSize = effectSizes,
-                                           power = ctsClus_getpower_effectSize(effectSizes,
+          plotTable <- reactive(data.frame(effectSize = effectSizes(),
+                                           power = ctsClus_getpower_effectSize(effectSizes(),
                                                                                cluster.size = cluster.size(),
                                                                                cluster.num = cluster.num(),
                                                                                cluster.var = cluster.var(),
                                                                                resid.var = resid.var(),
                                                                                alpha = alpha())))
           myPlot <- ggplot(plotTable(), aes(x = effectSize, y = power)) +
-                      geom_line(colour = "blue", size = 1) +
+                      # geom_smooth(se = FALSE, method = "loess", size = 1, colour = "blue") + 
+                      geom_line(size = 1, colour = "blue") +
                       ggtitle(paste("Power vs. Effect Size\nfor", cluster.num(), "clusters of", cluster.size(), "observations each")) +
                       xlab("Effect Size") + ylab("Power") + geom_hline(yintercept = 0.80)
           return(myPlot)
@@ -72,8 +80,9 @@ shinyServer(function(input, output){
         }
       # 3. specify power and # clusters --> receive effect size vs. cluster size
         if (input$clusterRequest == "effect size vs. cluster size"){
-          power        <- reactive(as.numeric(input$power))
-          cluster.num  <- reactive(as.numeric(input$cluster.num))
+          #browser()
+          power        <- reactive(as.numeric(input$power_es))
+          cluster.num  <- reactive(as.numeric(input$cluster.num_es))
           clusterSizes <- seq(10, 200, by = 5)
           
           plotTable <- reactive(data.frame(clusterSize = clusterSizes,
@@ -83,16 +92,18 @@ shinyServer(function(input, output){
                                                                                           cluster.var = cluster.var(),
                                                                                           resid.var = resid.var(),
                                                                                           alpha = alpha())))
-          myPlot <- ggplot(plotTable(), aes(x = clusterSize, y = effectSize)) + geom_line(colour = "blue", size = 1) +
-            ggtitle(paste("Effect Size vs. Cluster Size\nfor", cluster.num(), "clusters, for power =", sprintf("%3.2f", power()))) +
+          myPlot <- ggplot(plotTable(), aes(x = clusterSize, y = effectSize)) +
+            # geom_smooth(se = FALSE, method = "loess", size = 1, colour = "blue") +
+            geom_line(size = 1, colour = "blue") +
+            ggtitle(paste("Effect Size vs. Cluster Size\nfor", cluster.num(), "clusters, power =", sprintf("%3.2f", power()))) +
             xlab("Cluster Size") + ylab("Effect Size")
           return(myPlot)
         }
 
       # 4. specify power and cluster size --> receive effect size vs. # clusters (discrete)
         if (input$clusterRequest == "effect size vs. # clusters"){
-          cluster.size <- reactive(input$cluster.size)
-          power        <- reactive(input$power)
+          cluster.size <- reactive(input$cluster.size_en)
+          power        <- reactive(input$power_en)
           clusterNums <- 1:50
           plotTable <- reactive(data.frame(clusterNum = clusterNums,
                                            effectSize = ctsClus_getEffectSize_clusterNum(clusterNums,
@@ -101,8 +112,10 @@ shinyServer(function(input, output){
                                                                                          cluster.var = cluster.var(),
                                                                                          resid.var = resid.var(),
                                                                                          alpha = alpha())))
-          myPlot <- ggplot(plotTable(), aes(x = clusterNum, y = effectSize)) + geom_line(colour = "blue", size = 1) +
-            ggtitle(paste("Effect Size vs. # of Clusters\nfor", cluster.size(), "obs per cluster, for power =", sprintf("%3.2f", power()))) +
+          myPlot <- ggplot(plotTable(), aes(x = clusterNum, y = effectSize)) + 
+            # geom_smooth(se = FALSE, method = "loess", size = 1, colour = "blue") + 
+            geom_line(size = 1, colour = "blue") +
+            ggtitle(paste("Effect Size vs. # of Clusters\nfor", cluster.size(), "obs per cluster, power =", sprintf("%3.2f", power()))) +
             xlab("# of Clusters") + ylab("Effect Size")
           return(myPlot)
         }
@@ -111,23 +124,25 @@ shinyServer(function(input, output){
       
       # 1. specify effect size, receive power vs. sample size
         if (input$indvRequest == "power vs. sample size"){
-          effect.size <- reactive(input$effect.size)
+          effect.size <- reactive(input$effect.size_psIndv)
           sampleSizes <- seq(10, 1000, by = 5)
           
 #           plotTable <- reactive(data.frame(sampleSize = sampleSizes, power = ctsClus_getpower_clusterSize(sampleSizes)))
 #           XXX Not yet developed
-#           plotOut <- ggplot(plotTable(), aes(x = sampleSize, y = power)) + geom_line(colour = "blue", size = 1) +
+#           plotOut <- ggplot(plotTable(), aes(x = sampleSize, y = power)) + 
+#             # geom_smooth(se = FALSE, method = "loess", size = 1, colour = "blue") + 
+#             geom_line(size = 1, colour = "blue") +
 #             ggtitle(paste("Power vs. Sample Size\nfor effect size of", sprintf("%3.2f", effect.size()))) +
 #             xlab("Effect Size") + ylab("Power") + geom_hline(yintercept = 0.80)  
         }        
 
       # 2. Specify sample size, receive power vs. effect size
         if (input$indvRequest == "power vs. effect size"){
-          sample.size <- reactive(input$sample.size)
-          effectSizes = seq(0, 2, by = 0.05)
+          sample.size <- reactive(input$sample.size_peIndv)
+          effectSizes <- reactive(pretty(seq(0, 2*sqrt(resid.var()), length = 40), n = 40))
         
-          plotTable <- reactive(data.frame(effectSize = effectSizes,
-                                           power = ctsClus_getpower_effectSize(effectSizes,
+          plotTable <- reactive(data.frame(effectSize = effectSizes(),
+                                           power = ctsClus_getpower_effectSize(effectSizes(),
                                                                                cluster.num = cluster.num,
                                                                                cluster.size = sample.size(),
                                                                                cluster.var = cluster.var(),
@@ -135,8 +150,9 @@ shinyServer(function(input, output){
                                                                                alpha = alpha())))
 
           myPlot <- ggplot(plotTable(), aes(x = effectSize, y = power)) +
-            geom_line(colour = "blue", size = 1) +
-            ggtitle(paste("Power vs. Sample Size\nfor effect size of", sample.size())) +
+            # geom_smooth(se = FALSE, method = "loess", size = 1, colour = "blue") + 
+            geom_line(size = 1, colour = "blue") +
+            ggtitle(paste("Power vs. Effect Size\nfor sample size of", sample.size())) +
             xlab("Effect Size") +
             ylab("Power") +
             geom_hline(yintercept = 0.80)
@@ -146,7 +162,7 @@ shinyServer(function(input, output){
 
       # 3. Specify power, receive effect size vs. sample size
         if (input$indvRequest == "effect size vs. sample size"){
-          power <- reactive(as.numeric(input$power))
+          power <- reactive(as.numeric(input$power_esIndv))
           sampleSizes <- seq(10, 1000, by = 100)
           
           plotTable <- reactive(data.frame(sampleSize = sampleSizes,
@@ -158,7 +174,8 @@ shinyServer(function(input, output){
                                                                                           alpha = alpha())))
           
           myPlot <- ggplot(plotTable(), aes(x = sampleSize, y = effectSize)) +
-            geom_line(colour = "blue", size = 1) +
+            # geom_smooth(se = FALSE, method = "loess", size = 1, colour = "blue") + 
+            geom_line(size = 1, colour = "blue") +
             ggtitle(paste("Effect Size vs. Sample Size\nfor power = ", sprintf("%3.2f", power()))) +
             xlab("Sample Size") +
             ylab("Effect Size")

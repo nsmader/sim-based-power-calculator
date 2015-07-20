@@ -44,13 +44,105 @@ shinyUI(fluidPage(
 }, # This is the header control panel
   #br(), hr(), br(),
   fluidRow(
-{
+    column(3,
+      wellPanel(
+        p(actionButton("updateCalc", "Update calculation", icon("bolt"))), # look here for all icons - http://fontawesome.io/icons/
+        h4("Specify Request"),
+        conditionalPanel(condition = "input.clusterDesign == true",
+          selectInput(inputId = "clusterRequest",
+                      label = "What relationship do you need to explore?",
+                      choices = c("power vs. effect size",
+                                  "effect size vs. cluster size",
+                                  "effect size vs. # clusters"), # "cluster size vs. # clusters", ... not yet working
+                      selected = "power vs. effect size"),
+          conditionalPanel(condition = "input.clusterRequest == 'cluster size vs. # clusters'",
+            numericInput(inputId = "power_sn",
+                         label   = "Power",
+                         value = 0.8,
+                         min = 0.0,
+                         max = 1.0),
+            numericInput(inputId = "effect.size_sn",
+                         label = "Effect size",
+                         value = 0.5,
+                         min = 0,
+                         max = 4)
+          ),
+          conditionalPanel(condition = "input.clusterRequest == 'power vs. effect size'",
+            numericInput(inputId = "cluster.size_pe",
+                         label = "Sample size per cluster",
+                         value = 50,
+                         min = 1,
+                         max = 1000),
+            numericInput(inputId = "cluster.num_pe",
+                         label = "Number of clusters",
+                         value = 20,
+                         min = 1,
+                         max = 100)
+          ),
+          conditionalPanel(condition = "input.clusterRequest == 'effect size vs. cluster size'",
+            numericInput(inputId = "power_es",
+                         label = "Power",
+                         value = 0.8,
+                         min = 0.0,
+                         max = 1.0),
+            numericInput(inputId = "cluster.num_es",
+                         label = "Number of clusters",
+                         value = 20,
+                         min = 1,
+                         max = 100)
+          ),
+          conditionalPanel(condition = "input.clusterRequest == 'effect size vs. # clusters'",
+            numericInput(inputId = "power_en",
+                         label = "Power",
+                         value = 0.8,
+                         min = 0.0,
+                         max = 1.0),
+            numericInput(inputId = "cluster.size_en",
+                         label = "Sample size per cluster",
+                         value = 50,
+                         min = 1,
+                         max = 1000)
+          )
+        ),
+        conditionalPanel(condition = "input.clusterDesign == false",
+          selectInput(inputId = "indvRequest",
+                      label = "What relationship do you need to explore?",
+                      choices = c("power vs. effect size",
+                                  "effect size vs. sample size"), # "power vs. sample size", ... isn't working yet
+                      selected = "power vs. effect size"),
+          conditionalPanel(condition = "input.indvRequest == 'power vs. sample size'",
+            numericInput(inputId = "effect.size_psIndv",
+                         label = "Effect size",
+                         value = 0.5,
+                         min = 0,
+                         max = 4)
+          ),
+          conditionalPanel(condition = "input.indvRequest == 'power vs. effect size'",
+            numericInput(inputId = "sample.size_peIndv",
+                         label = "Sample size",
+                         value = 50,
+                         min = 1,
+                         max = 1000)
+          ),
+          conditionalPanel(condition = "input.indvRequest == 'effect size vs. sample size'",
+            numericInput(inputId = "power_esIndv",
+                         label = "Power",
+                         value = 0.8,
+                         min = 0.0,
+                         max = 1.0)
+          )
+        ),
+        numericInput(inputId = "resid.sd",
+                     label = "Standard deviation of the outcome",
+                     value = 1.0,
+                     min = 0.01,
+                     max = 10.0)
+      )
+    ),
     column(3,
       wellPanel(
         h4("Power parameters"),
         sliderInput("alpha", HTML("Alpha (&alpha;)"), 0.05, min = 0.01, max = 0.1, step = 0.01),
-#         numericInput("n.iter", "Number of Simulation Iterations", 10, min = 1)
-        numericInput("resid.var", "Residual variation", 1.0,  min = 0.01,   max = 10.0),
         #tags$div(title = withMathJax("The equation for ICC is: $$\\frac{\\sigma^2_{Between}}{\\sigma^2_{Total}}$$"), # 
         conditionalPanel(condition = "input.clusterDesign == true",
           sliderInput("cluster.ICC", "", label = "Intra-Cluster Correlation (ICC)", min = 0, max = 1, step = 0.01, value = 0.25),
@@ -59,70 +151,8 @@ shinyUI(fluidPage(
             differences are in individual outcomes.")
             #withMathJax("The equation for ICC is: $$\\frac{\\sigma^2_{Between}}{\\sigma^2_{Total}}$$")
         )
-      ),
-      conditionalPanel(condition = "input.clusterDesign == true",
-        wellPanel(
-          p(actionButton("updateCalc", "Update calculation", icon("bolt"))),
-          h4("Specify Request"),
-          selectInput(inputId = "clusterRequest",
-                      label = "What relationship do you need to explore?",
-                      choices = c("cluster size vs. # clusters",
-                                  "power vs. effect size",
-                                  "effect size vs. cluster size",
-                                  "effect size vs. # clusters"),
-                      selected = "power vs. effect size"),
-          conditionalPanel(condition = "input.clusterRequest == 'cluster size vs. # clusters'",
-            numericInput(inputId = "power",
-                         label   = "Power",       0.8, min = 0.0, max = 1.0),
-            numericInput("effect.size", "Effect size", 0.5, min = 0,   max = 4)
-          ),
-          conditionalPanel(condition = "input.clusterRequest == 'power vs. effect size'",
-            numericInput("cluster.size", "Sample size per cluster", 50, min = 1, max = 1000),
-            numericInput("cluster.num",  "Number of clusters",      20, min = 1, max = 100)
-          ),
-          conditionalPanel(condition = "input.clusterRequest == 'effect size vs. cluster size'",
-            numericInput("power",       "Power",              0.8, min = 0.0, max = 1.0),
-            numericInput("cluster.num", "Number of clusters", 20,  min = 1,   max = 100)
-          ),
-          conditionalPanel(condition = "input.clusterRequest == 'effect size vs. # clusters'",
-            numericInput("power",        "Power",                   0.8, min = 0.0, max = 1.0),
-            numericInput("cluster.size", "Sample size per cluster", 50,  min = 1,   max = 1000)
-          )
-        )
-      ),
-      conditionalPanel(condition = "input.clusterDesign == false",
-        wellPanel(
-          p(actionButton("updateCalc", "Update calculation", icon("bolt"))), # look here for all icons - http://fontawesome.io/icons/
-          h4("Specify Request"),
-          selectInput(inputId = "indvRequest",
-                      label = "What relationship do you need to explore?",
-                      choices = c("power vs. sample size",
-                                  "power vs. effect size",
-                                  "effect size vs. sample size"),
-                      selected = "power vs. effect size"),
-          conditionalPanel(condition = "input.indvRequest == 'power vs. sample size'",
-            numericInput(inputId = "effect.size",
-                         label = "Effect size",
-                         value = 0.5,
-                         min = 0,
-                         max = 4)
-          ),
-          conditionalPanel(condition = "input.indvRequest == 'power vs. effect size'",
-            numericInput(inputId = "sample.size",
-                         label = "Sample size",
-                         value = 50,
-                         min = 1,
-                         max = 1000)
-          ),
-          conditionalPanel(condition = "input.indvRequest == 'effect size vs. sample size'",
-            numericInput(inputId = "power",
-                         label = "Power",
-                         value = 0.8,
-                         min = 0.0,
-                         max = 1.0)
-          )
-        )
       )
+      
 #       wellPanel(
 #         h4("Treatment Parameters"),
 #         sliderInput("baseline.prev", "Prevalence under control conditions",   min = 0, max = 1, step = 0.01, value = 0.8),
@@ -141,8 +171,7 @@ shinyUI(fluidPage(
 #           p("The odds ratio represents the treatment effect--relative to baseline--that you want to detect.") #, where values below zero represent a protective effect, and those above zero represent detrimental effects.
 #         )
 #       )
-    )
-}, # This is the left-hand control panel
+    ),
     column(6,
       plotOutput("plotOut")
     )
