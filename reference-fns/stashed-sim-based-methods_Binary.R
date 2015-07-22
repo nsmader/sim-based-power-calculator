@@ -1,8 +1,5 @@
 
 nSim   = isolate(as.numeric(input$n.iter))
-print(paste("nSim =", nSim))
-output$iter  <- renderText(paste("Number of simulations is", nSim))
-output$cores <- renderText(paste("Number of utilized cores is", getDoParWorkers()))
 
 #########################
 ### Set up simulation ###

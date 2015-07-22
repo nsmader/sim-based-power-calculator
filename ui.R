@@ -25,7 +25,7 @@ shinyUI(fluidPage(
         radioButtons(inputId = "outcomeType",
                      label = NULL,
                      choices = c("Continuous",
-                                 "Binary (inactive)",
+                                 "Binary", # (inactive)
                                  "Count (inactive)"),
                      selected = NULL,
                      inline = FALSE)
@@ -47,96 +47,161 @@ shinyUI(fluidPage(
     column(3,
       wellPanel(
         p(actionButton("updateCalc", "Update calculation", icon("bolt"))), # look here for all icons - http://fontawesome.io/icons/
-        h4("Specify Request"),
-        conditionalPanel(condition = "input.clusterDesign == true",
-          selectInput(inputId = "clusterRequest",
-                      label = "What relationship do you need to explore?",
-                      choices = c("power vs. effect size",
-                                  "effect size vs. cluster size",
-                                  "effect size vs. # clusters"), # "cluster size vs. # clusters", ... not yet working
-                      selected = "power vs. effect size"),
-          conditionalPanel(condition = "input.clusterRequest == 'cluster size vs. # clusters'",
-            numericInput(inputId = "power_sn",
-                         label   = "Power",
-                         value = 0.8,
-                         min = 0.0,
-                         max = 1.0),
-            numericInput(inputId = "effect.size_sn",
-                         label = "Effect size",
-                         value = 0.5,
-                         min = 0,
-                         max = 4)
+        conditionalPanel(condition = "input.outcomeType == 'Continuous'",
+          h4("Specify Request"),
+          conditionalPanel(condition = "input.clusterDesign == true",
+            selectInput(inputId = "clusterRequest",
+                        label = "What relationship do you need to explore?",
+                        choices = c("power vs. effect size",
+                                    "effect size vs. cluster size",
+                                    "effect size vs. # clusters"), # "cluster size vs. # clusters",, ... not yet working
+                        selected = "power vs. effect size"),
+            conditionalPanel(condition = "input.clusterRequest == 'cluster size vs. # clusters'",
+              tags$div(title = "Typically set at 80%, it is the ability to avoid Type II error.",
+                numericInput(inputId = "power_sn",
+                  label = "Power",
+                  value = 0.8,
+                  min = 0.0,
+                  max = 1.0)
+              ),
+              tags$div(title = "The anticipated effect of the treatment.",
+                numericInput(inputId = "effect.size_sn",
+                             label = "Effect size",
+                             value = 0.5,
+                             min = 0,
+                             max = 4)
+              )
+            ),
+            conditionalPanel(condition = "input.clusterRequest == 'power vs. effect size'",
+              tags$div(title = "The number of individuals sampled in each of the treatment clusters.",
+                numericInput(inputId = "cluster.size_pe",
+                             label = "Sample size per cluster",
+                             value = 50,
+                             min = 1,
+                             max = 1000)
+              ),
+              tags$div(title = "The number of clusters, each of which contains the indicated number of sampled individuals.",
+              numericInput(inputId = "cluster.num_pe",
+                           label = "Number of clusters",
+                           value = 20,
+                           min = 1,
+                           max = 100)
+              )
+            ),
+            conditionalPanel(condition = "input.clusterRequest == 'effect size vs. cluster size'",
+              tags$div(title = "Typically set at 80%, it is the ability to avoid Type II error.",
+                numericInput(inputId = "power_es",
+                             label = "Power",
+                             value = 0.8,
+                             min = 0.0,
+                             max = 1.0)
+              ),
+              tags$div(title = "The number of clusters, each of which contains the indicated number of sampled individuals.",
+                numericInput(inputId = "cluster.num_es",
+                             label = "Number of clusters",
+                             value = 20,
+                             min = 1,
+                             max = 100)
+              )
+            ),
+            conditionalPanel(condition = "input.clusterRequest == 'effect size vs. # clusters'",
+              tags$div(title = "Typically set at 80%, it is the ability to avoid Type II error.",
+                numericInput(inputId = "power_en",
+                             label = "Power",
+                             value = 0.8,
+                             min = 0.0,
+                             max = 1.0)
+              ),
+              tags$div(title = "The number of individuals sampled in each of the treatment clusters.",
+                numericInput(inputId = "cluster.size_en",
+                             label = "Sample size per cluster",
+                             value = 50,
+                             min = 1,
+                             max = 1000)
+              )
+            )
           ),
-          conditionalPanel(condition = "input.clusterRequest == 'power vs. effect size'",
-            numericInput(inputId = "cluster.size_pe",
-                         label = "Sample size per cluster",
-                         value = 50,
-                         min = 1,
-                         max = 1000),
-            numericInput(inputId = "cluster.num_pe",
-                         label = "Number of clusters",
-                         value = 20,
-                         min = 1,
-                         max = 100)
+          conditionalPanel(condition = "input.clusterDesign == false",
+            selectInput(inputId = "indvRequest",
+                        label = "What relationship do you need to explore?",
+                        choices = c("power vs. effect size",
+                                    "effect size vs. sample size"), # "power vs. sample size", ... isn't working yet
+                        selected = "power vs. effect size"),
+            conditionalPanel(condition = "input.indvRequest == 'power vs. sample size'",
+              tags$div(title = "The anticipated effect of the treatment.",
+                numericInput(inputId = "effect.size_psIndv",
+                             label = "Effect size",
+                             value = 0.5,
+                             min = 0,
+                             max = 4)
+              )
+            ),
+            conditionalPanel(condition = "input.indvRequest == 'power vs. effect size'",
+              tags$div(title = "The number of individuals you will need to sample.",
+                numericInput(inputId = "sample.size_peIndv",
+                             label = "Sample size",
+                             value = 50,
+                             min = 1,
+                             max = 1000)
+              )
+            ),
+            conditionalPanel(condition = "input.indvRequest == 'effect size vs. sample size'",
+              tags$div(title = "Typically set at 80%, it is the ability to avoid Type II error.",
+                numericInput(inputId = "power_esIndv",
+                             label = "Power",
+                             value = 0.8,
+                             min = 0.0,
+                             max = 1.0)
+              )
+            )
           ),
-          conditionalPanel(condition = "input.clusterRequest == 'effect size vs. cluster size'",
-            numericInput(inputId = "power_es",
-                         label = "Power",
-                         value = 0.8,
-                         min = 0.0,
-                         max = 1.0),
-            numericInput(inputId = "cluster.num_es",
-                         label = "Number of clusters",
-                         value = 20,
-                         min = 1,
-                         max = 100)
-          ),
-          conditionalPanel(condition = "input.clusterRequest == 'effect size vs. # clusters'",
-            numericInput(inputId = "power_en",
-                         label = "Power",
-                         value = 0.8,
-                         min = 0.0,
-                         max = 1.0),
-            numericInput(inputId = "cluster.size_en",
-                         label = "Sample size per cluster",
-                         value = 50,
-                         min = 1,
-                         max = 1000)
-          )
+          numericInput(inputId = "resid.sd",
+                       label = "Standard deviation of the outcome",
+                       value = 1.0,
+                       min = 0.01,
+                       max = 10.0)
         ),
-        conditionalPanel(condition = "input.clusterDesign == false",
-          selectInput(inputId = "indvRequest",
-                      label = "What relationship do you need to explore?",
-                      choices = c("power vs. effect size",
-                                  "effect size vs. sample size"), # "power vs. sample size", ... isn't working yet
-                      selected = "power vs. effect size"),
-          conditionalPanel(condition = "input.indvRequest == 'power vs. sample size'",
-            numericInput(inputId = "effect.size_psIndv",
-                         label = "Effect size",
-                         value = 0.5,
+        conditionalPanel(condition = "input.outcomeType == 'Binary'",
+          h4("Treatment Parameters"),
+          sliderInput(inputId = "baseline.prev",
+                      label = "Prevalence under control conditions",
+                      min = 0,
+                      max = 1,
+                      step = 0.01,
+                      value = 0.8),
+          selectInput(inputId = "trtSpec",
+                      label = "Method of entering treatment effect",
+                      choices = c("Prevalence", "Odds Ratio")),
+          conditionalPanel(condition = "input.trtSpec == 'Prevalence'",
+            sliderInput(inputId = "trt.prev",
+                        label = "Prevalence under treatment conditions",
+                        min = 0,
+                        max = 1,
+                        step = 0.01,
+                        value = c(0.6, 0.8)),
+            numericInput(inputId = "trt.vals.num",
+                         label = "Number of values to test in this range",
+                         value = 5,
                          min = 0,
-                         max = 4)
+                         max = 100),
+            p("Prevalence under control conditions can be estimated using either baseline values pilot data or the literature.
+              Prevalence number treatment is the estimated minimum prevalence you want to detect.")
           ),
-          conditionalPanel(condition = "input.indvRequest == 'power vs. effect size'",
-            numericInput(inputId = "sample.size_peIndv",
-                         label = "Sample size",
-                         value = 50,
-                         min = 1,
-                         max = 1000)
-          ),
-          conditionalPanel(condition = "input.indvRequest == 'effect size vs. sample size'",
-            numericInput(inputId = "power_esIndv",
-                         label = "Power",
-                         value = 0.8,
-                         min = 0.0,
-                         max = 1.0)
+          conditionalPanel(condition = "input.trtSpec == 'Odds Ratio'",
+            sliderInput(inputId = "or.list",
+                        label = "Odds ratio",
+                        min = 0,
+                        max = 1,
+                        step = 0.01,
+                        value = c(0.75, 1.00)),
+            numericInput(inputId = "or.vals.num",
+                         label = "Number of values to test in this range",
+                         value = 5,
+                         min = 0,
+                         max = 100), 
+            p("The odds ratio represents the treatment effect--relative to baseline--that you want to detect.") #, where values below zero represent a protective effect, and those above zero represent detrimental effects.
           )
-        ),
-        numericInput(inputId = "resid.sd",
-                     label = "Standard deviation of the outcome",
-                     value = 1.0,
-                     min = 0.01,
-                     max = 10.0)
+        )
       )
     ),
     column(3,
@@ -152,25 +217,6 @@ shinyUI(fluidPage(
             #withMathJax("The equation for ICC is: $$\\frac{\\sigma^2_{Between}}{\\sigma^2_{Total}}$$")
         )
       )
-      
-#       wellPanel(
-#         h4("Treatment Parameters"),
-#         sliderInput("baseline.prev", "Prevalence under control conditions",   min = 0, max = 1, step = 0.01, value = 0.8),
-#         selectInput("trtSpec", "Method of entering treatment effect", c("Prevalence", "Odds Ratio")),
-#         conditionalPanel(
-#           condition = "input.trtSpec == 'Prevalence'",
-#           sliderInput("trt.prev", "Prevalence under treatment conditions", min = 0, max = 1, step = 0.01, value = c(0.6, 0.8)),
-#           numericInput("trt.vals.num",  "Number of values to test in this range", 5, min = 0, max = 100),
-#           p("Prevalence under control conditions can be estimated using either baseline values pilot data or the literature.
-#             Prevalence number treatment is the estimated minimum prevalence you want to detect.")
-#         ),
-#         conditionalPanel(
-#           condition = "input.trtSpec == 'Odds Ratio'",
-#           sliderInput("or.list", "Odds ratio", min = 0, max = 1, step = 0.01, value = c(0.75, 1.00)),
-#           numericInput("or.vals.num",  "Number of values to test in this range", 5, min = 0, max = 100), 
-#           p("The odds ratio represents the treatment effect--relative to baseline--that you want to detect.") #, where values below zero represent a protective effect, and those above zero represent detrimental effects.
-#         )
-#       )
     ),
     column(6,
       plotOutput("plotOut")
