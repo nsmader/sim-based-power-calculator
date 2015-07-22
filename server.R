@@ -38,7 +38,8 @@ shinyServer(function(input, output){
           
           power       <- reactive(as.numeric(input$power_sn))
           effect.size <- reactive(as.numeric(input$effect.size_sn))
-          clusterNums = 1:50
+          clusterNums <- seq(0, 200, by = 5)
+          clusterNums[1] <- 1
           
           plotTable <- reactive(data.frame(clusterNum = clusterNums,
                                            clusterSize = ctsClus_getClusterSize_clusterNum(clusterNum.list = clusterNums,
