@@ -2,3 +2,4 @@ name: sim-based-power-calculator
 account: nsmader
 bundleId: 221231
 url: https://nsmader.shinyapps.io/sim-based-power-calculator
+server: shinyapps.io
