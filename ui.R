@@ -4,7 +4,7 @@ library(shiny)
 library(shinyapps)
 shinyUI(fluidPage(
   titlePanel("Experimental Design Power Calculator"), # Simulation-Based Statistical 
-{ 
+{
   wellPanel(
     fluidRow(
       column(3, 
@@ -165,24 +165,24 @@ shinyUI(fluidPage(
           h4("Treatment Parameters"),
           sliderInput(inputId = "baseline.prev",
                       label = "Prevalence under control conditions",
-                      min = 0,
-                      max = 1,
+                      min = 0.00,
+                      max = 0.99,
                       step = 0.01,
                       value = 0.8),
           selectInput(inputId = "trtSpec",
                       label = "Method of entering treatment effect",
                       choices = c("Prevalence", "Odds Ratio")),
           conditionalPanel(condition = "input.trtSpec == 'Prevalence'",
-            sliderInput(inputId = "trt.prev",
+            sliderInput(inputId = "trt.list",
                         label = "Prevalence under treatment conditions",
-                        min = 0,
-                        max = 1,
+                        min = 0.00,
+                        max = 0.99,
                         step = 0.01,
                         value = c(0.6, 0.8)),
             numericInput(inputId = "trt.vals.num",
                          label = "Number of values to test in this range",
                          value = 5,
-                         min = 0,
+                         min =   0,
                          max = 100),
             p("Prevalence under control conditions can be estimated using either baseline values pilot data or the literature.
               Prevalence number treatment is the estimated minimum prevalence you want to detect.")
@@ -198,9 +198,28 @@ shinyUI(fluidPage(
                          label = "Number of values to test in this range",
                          value = 5,
                          min = 0,
-                         max = 100), 
+                         max = 100),
             p("The odds ratio represents the treatment effect--relative to baseline--that you want to detect.") #, where values below zero represent a protective effect, and those above zero represent detrimental effects.
-          )
+          ),
+          tags$div(title = "The number of individuals sampled in each of the treatment clusters.",
+            numericInput(inputId = "cluster.size_binClus",
+                         label = "Sample size per cluster",
+                         value = 50,
+                         min = 1,
+                         max = 1000)
+          ),
+          tags$div(title = "The number of clusters, each of which contains the indicated number of sampled individuals.",
+            numericInput(inputId = "cluster.num_binClus",
+                         label = "Number of clusters",
+                         value = 20,
+                         min = 1,
+                         max = 100)
+          ),
+          numericInput(inputId = "n.iter",
+                       label = "Number of simulations",
+                       value = 10,
+                       min = 5,
+                       max = 1000)
         )
       )
     ),

@@ -121,3 +121,69 @@
 ### BINARY OUTCOMES
 #------------------
 
+  #-----------------------------
+  # Clustered-randomized designs
+  #-----------------------------
+  
+#   library(foreach)
+#   library(doParallel)
+#   binClus_getPower(valRange = seq(0.70, 0.90, by = 0.1),
+#                    request = "Prevalence",
+#                    baseline.prev = 0.8,
+#                    cluster.num = 6,
+#                    cluster.size = 100,
+#                    cluster.var = 0.2,
+#                    alpha = 0.05,
+#                    n.iter = 50)
+  binClus_getPower <- function(valRange, request, baseline.prev, cluster.num, cluster.size, cluster.var, alpha, n.iter = 10){
+    
+    if (request == "Prevalence"){
+      or.list <- valRange/(1-valRange) / ( baseline.prev/(1-baseline.prev)) 
+    } else if (request == "Odds Ratio") {
+      or.list <- valRange
+    }
+    cluster.id <- rep(x = 1:(cluster.num*2),
+                      each = cluster.size)
+    treat.id   <- rep(x = c(0,1),
+                      each = cluster.num*cluster.size)
+    
+    ### Begin simulation    
+    cl <- makeCluster(spec = detectCores() - 1)
+    registerDoParallel(cl = cl)
+    
+    powerTable <- data.frame(NULL)
+    for (or.i in or.list){ # NSM: Could farm this into the foreach by making a runlist permuting or.list and nSim, whose rows are fed into the foreach
+      
+      # Run sim iterations in parallel
+      vIsSig <- foreach(1:n.iter, .combine = rbind) %do% {
+        library(lme4) # Needs to be established for each worker core
+  
+    		cluster.re <- rnorm(n = cluster.num*2,
+    		                    mean = 0,
+    		                    sd = sqrt(cluster.var))
+    		mu = cluster.re[cluster.id] + log(baseline.prev/(1-baseline.prev)) + treat.id*log(or.i)
+    		p = exp(mu)/(1+exp(mu))
+    		Y = rbinom (length(mu), 1, p)
+    		fit = glmer(formula = Y ~ treat.id + (1|cluster.id),
+    		            family = "binomial") 
+    		ests = coef(summary(fit)) 
+    		ests = ests[grep("treat.id", row.names(ests)), ]
+        isSig <- ests[4] < alpha # Column 4 has the p-value for the treatment variable
+    		return(isSig)
+        
+    	} # End of sim iterations
+      counter <- sum(vIsSig)
+  
+      xLabel <- valRange[which(or.i == or.list)]
+    	powerTable <- rbind(powerTable, c(xLabel, round(counter/n.iter, 3) ))
+    
+    } # End of loop across ORs
+    stopCluster(cl)
+  
+    colnames(powerTable) <- c("x", "power")
+    rownames(powerTable) <- NULL
+    return(powerTable)
+  }
+
+  
+  

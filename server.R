@@ -27,7 +27,7 @@ shinyServer(function(input, output){
   
   output$plotOut <- renderPlot({
     input$updateCalc # This reruns this code when the "updateCalc" button in the UI is clicked
-  {
+
   if (input$outcomeType == "Continuous"){
     
     if (input$clusterDesign == T){
@@ -191,19 +191,59 @@ shinyServer(function(input, output){
     if (input$clusterDesign == T){
         
       # Run simulation with clustering according to specified parameters
-      Results <- reactive({
-        # Isolate all of the following assignments to not allow them to run until the "Run Sim" button is clicked
-        # Great description of isolation: http://shiny.rstudio.com/articles/isolation.html
-        #         input$runSim # NSM: This creates dependency (i.e. will rerun this code) every time the "run sim" button is clicked.
-                   #      The trick is to isolate this run from all other changes of parameters, until the user is ready 
-                   #        to run. I'm not quite sure how to do this but, somehow, this example does it: https://github.com/rstudio/shiny-examples/blob/master/060-retirement-simulation/server.r
+      baseline.prev <- reactive(as.numeric(input$baseline.prev))
+      cluster.size <- reactive(input$cluster.size_binClus)
+      cluster.num  <- reactive(input$cluster.num_binClus)
+      n.iter <- reactive(as.numeric(input$n.iter))
+      request <- reactive(input$trtSpec)
+      outLabel <- reactive(switch(request(),
+                                  "Prevalence" = "Treatment Prevalence",
+                                  "Odds Ratio" = "Odds Ratio"))
+      
+      if (request() == "Odds Ratio"){
+        my.min  <- reactive(min(input$or.list))
+        my.max  <- reactive(max(input$or.list))
+        my.vals <- reactive(input$or.vals.num)
+      } else {
+        my.min  <- reactive(min(input$trt.list))
+        my.max  <- reactive(max(input$trt.list))
+        my.vals <- reactive(input$trt.vals.num)
+      }
+      valRange <- reactive(seq(my.max(), my.min(), length = my.vals()))
+      
+      plotTable <- reactive({
+                     input$updateCalc
+                     # This call initiates recalculation only when the button
+                     # is clicked. See, e.g.:
+                     # https://github.com/rstudio/shiny-examples/blob/master/060-retirement-simulation/server.r
+                     # Great description of isolation: http://shiny.rstudio.com/articles/isolation.html
+                     binClus_getPower(valRange = valRange(),
+                                      request = request(),
+                                      baseline.prev = baseline.prev(),
+                                      cluster.num = cluster.num(),
+                                      cluster.size = cluster.size(),
+                                      cluster.var = cluster.var(),
+                                      alpha = alpha(),
+                                      n.iter = n.iter())
       })
+      #colnames(plotTable()) <- c(outLabel(), "Power")
+      
+      myPlot <- ggplot(plotTable(), aes(x = x, y = power)) +
+            # geom_smooth(se = FALSE, method = "loess", size = 1, colour = "blue") + 
+            geom_line(size = 1, colour = "blue") +
+            ggtitle(paste("Power vs.",
+                          outLabel(),
+                          "\nfor", cluster.num(), "clusters of",
+                          cluster.size(), "observations each")) +
+            xlab(outLabel()) +
+            ylab("Power") +
+            geom_hline(yintercept = 0.80)
+      return(myPlot)
 
     } else { # Code for unclustered designs
       # Run unclustered analysis of binary outcome
     }
   } # End of binary designs
-  } # This is the hierarchy of {cts/bin, clustered, requeset}
 
   })
 
